@@ -464,97 +464,96 @@ elif page == "prediksi":
             st.session_state.csv_dist = dist_df.to_csv(index=False).encode("utf-8")
             
 if st.session_state.results:
-    models_items = list(st.session_state.results.items())
-    cols = st.columns(len(models_items))   
-    for col, (model_key, df_model) in zip(cols, models_items):
-        with col:
-            st.subheader(f"Distribusi Sentimen – {model_key}")
-            dist_df = (
-                df_model["pred_label"]
-                .value_counts()
-                .rename_axis("Sentiment")
-                .reset_index(name="Count")
-            )
-            st.bar_chart(dist_df.set_index("Sentiment"))
+    if page == "prediksi":
+        if st.session_state.get("results"):
+            models_items = list(st.session_state.results.items())
+            cols = st.columns(len(models_items))
+            for col, (model_key, df_model) in zip(cols, models_items):
+                with col:
+                    st.subheader(f"Distribusi Sentimen – {model_key}")
+                    dist_df = (
+                        df_model["pred_label"]
+                        .value_counts()
+                        .rename_axis("Sentiment")
+                        .reset_index(name="Count")
+                    )
+                    st.bar_chart(dist_df.set_index("Sentiment"))
 
-            st.subheader(f"Sampel Hasil Prediksi – {model_key}")
-            st.dataframe(df_model.head(20), use_container_width=True)
+                    st.subheader(f"Sampel Hasil Prediksi – {model_key}")
+                    st.dataframe(df_model.head(20), use_container_width=True)
+
+            c1, c2, c3, c4, c5 = st.columns([1, 2, 2, 2, 1])
+            is_combo = st.session_state.get("is_combo", False)
+
+            with c2:
+                st.download_button(
+                    "Download Hasil Prediksi",
+                    data=st.session_state.csv_pred,
+                    file_name=(
+                        f"{st.session_state.app_id}_prediksi_ulasan.xlsx"
+                        if is_combo else
+                        f"{st.session_state.app_id}_prediksi_ulasan.csv"
+                    ),
+                    mime=(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        if is_combo else
+                        "text/csv"
+                    ),
+                    type="primary",
+                    key="dl_pred",
+                )
+
+            with c4:
+                st.download_button(
+                    "Download Distribusi Sentimen",
+                    data=st.session_state.csv_dist,
+                    file_name=(
+                        f"{st.session_state.app_id}_distribusi_sentimen.xlsx"
+                        if is_combo else
+                        f"{st.session_state.app_id}_distribusi_sentimen.csv"
+                    ),
+                    mime=(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        if is_combo else
+                        "text/csv"
+                    ),
+                    type="primary",
+                    key="dl_dist",
+                )
+
+            # METRIK
+            def rating_to_label(r):
+                if pd.isna(r):
+                    return None
+                return 1 if r >= 4 else 0
+
+            all_metrics = []
+            for model_key, df_model in st.session_state.results.items():
+                df_eval = df_model.copy()
+                df_eval["true_label"] = df_eval["rating"].apply(rating_to_label)
+                df_eval = df_eval.dropna(subset=["true_label"])
+
+                if df_eval.empty:
+                    continue
+
+                acc = accuracy_score(df_eval["true_label"], df_eval["pred"])
+                prec = precision_score(df_eval["true_label"], df_eval["pred"])
+                rec = recall_score(df_eval["true_label"], df_eval["pred"])
+                f1  = f1_score(df_eval["true_label"], df_eval["pred"])
+
+                all_metrics.append({
+                    "Model": model_key,
+                    "Accuracy": acc,
+                    "Precision": prec,
+                    "Recall": rec,
+                    "F1-Score": f1,
+                })
+
+            if all_metrics:
+                st.subheader("Perbandingan Metrik Evaluasi (dibanding rating bintang)")
+                st.dataframe(pd.DataFrame(all_metrics), use_container_width=True)
+            else:
+                st.info("Tidak ada metrik yang bisa dihitung.")
+        else:
             
-    c1, c2, c3, c4, c5 = st.columns([1, 2, 2, 2, 1])
-
-    is_combo = st.session_state.get("is_combo", False)
-
-    with c2:
-        st.download_button(
-            "Download Hasil Prediksi",
-            data=st.session_state.csv_pred,
-            file_name=(
-                f"{st.session_state.app_id}_prediksi_ulasan.xlsx"
-                if is_combo else
-                f"{st.session_state.app_id}_prediksi_ulasan.csv"
-            ),
-            mime=(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                if is_combo else
-                "text/csv"
-            ),
-            type="primary",
-            key="dl_pred",
-        )
-
-    with c4:
-        st.download_button(
-            "Download Distribusi Sentimen",
-            data=st.session_state.csv_dist,
-            file_name=(
-                f"{st.session_state.app_id}_distribusi_sentimen.xlsx"
-                if is_combo else
-                f"{st.session_state.app_id}_distribusi_sentimen.csv"
-            ),
-            mime=(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                if is_combo else
-                "text/csv"
-            ),
-            type="primary",
-            key="dl_dist",
-        )
-
-    # METRIK
-    def rating_to_label(r):
-        if pd.isna(r):
-            return None
-        return 1 if r >= 4 else 0
-
-    all_metrics = []
-    for model_key, df_model in st.session_state.results.items():
-        df_eval = df_model.copy()
-        df_eval["true_label"] = df_eval["rating"].apply(rating_to_label)
-        df_eval = df_eval.dropna(subset=["true_label"])
-
-        if df_eval.empty:
-            continue
-
-        acc = accuracy_score(df_eval["true_label"], df_eval["pred"])
-        prec = precision_score(df_eval["true_label"], df_eval["pred"])
-        rec = recall_score(df_eval["true_label"], df_eval["pred"])
-        f1 = f1_score(df_eval["true_label"], df_eval["pred"])
-
-        all_metrics.append({
-            "Model": model_key,
-            "Accuracy": acc,
-            "Precision": prec,
-            "Recall": rec,
-            "F1-Score": f1
-        })
-
-    if all_metrics:
-        st.subheader("Perbandingan Metrik Evaluasi (dibanding rating bintang)")
-        st.dataframe(pd.DataFrame(all_metrics), use_container_width=True)
-    else:
-        st.info("Tidak ada metrik yang bisa dihitung.")
-
-else:
-    st.info("Masukkan link/package, lalu klik **Prediksi**.")
-
-        
+            st.info("Masukkan link/package, lalu klik **Prediksi**.")
