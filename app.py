@@ -52,7 +52,7 @@ st.markdown("""
 st.markdown("""
 <style>
 @media (min-width: 769px){
-  [data-testid="stHeader"]{ display: none !important; }
+
 }
 @media (max-width: 768px){
   [data-testid="stHeader"]{
@@ -296,6 +296,15 @@ elif page == "prediksi":
     
     st.markdown("""
     <style>
+    /* Pin tombol hamburger */
+    [data-testid="stSidebarCollapseButton"]{
+    position: fixed !important;
+    top: 90px !important;   /* sejajarkan dengan navbar kustommu */
+    left: 12px !important;
+    z-index: 10000 !important;
+    }
+
+    /* Desktop: sidebar menempel kiri, konten digeser */
     @media (min-width: 769px){
     [data-testid="stSidebar"]{
         position: fixed !important;
@@ -303,20 +312,18 @@ elif page == "prediksi":
         left: 0 !important;
         height: calc(100% - 90px) !important;
         width: 18rem !important;
-        z-index: 150000 !important;
+        z-index: 9999 !important;
     }
     [data-testid="stAppViewContainer"] > .main{
         margin-left: 18rem !important;
     }
     }
 
+    /* Mobile: jadikan sidebar sebagai drawer (tidak menggeser konten) */
     @media (max-width: 768px){
     [data-testid="stSidebar"]{
         width: 80vw !important;
         min-width: 260px !important;
-        top: 90px !important;
-        height: calc(100% - 90px) !important;
-        z-index: 150000 !important;
     }
     [data-testid="stAppViewContainer"] > .main{
         margin-left: 0 !important;
