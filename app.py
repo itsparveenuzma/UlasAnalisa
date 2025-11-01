@@ -14,7 +14,7 @@ st.set_page_config(
     page_title="UlasAnalisa – Prediksi Sentimen",
     page_icon="static/logo_ulas.png", 
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 for k, v in {
@@ -57,14 +57,7 @@ st.markdown("""
 /* Pastikan navbar kustom di atas segalanya */
 .navbar{ z-index: 100000 !important; }
 
-/* Pin tombol hamburger di bawah navbar kustom */
-[data-testid="stSidebarCollapseButton"]{
-  position: fixed !important;
-  top: 92px !important;
-  left: 12px !important;
-  z-index: 200001 !important; /* must be above navbar (100000) */
-  display: flex !important;
-}
+/* (moved) hamburger positioning handled in mobile media query below */
 @media (max-width: 900px){
   [data-testid="stSidebarCollapseButton"] button{ padding: 8px 10px !important; }
 }
@@ -77,6 +70,7 @@ st.markdown("""
 }
 /* MOBILE HAMBURGER POSITION */
 @media (max-width: 900px){[data-testid="stSidebarCollapseButton"]{top:92px !important;}}
+@media (min-width: 901px){[data-testid="stSidebarCollapseButton"]{display:none !important;}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -179,7 +173,7 @@ if page == "prediksi":
           box-shadow: none !important;
       }
       [data-testid="stAppViewContainer"] > .main{
-          margin-left: 18rem !important;
+          margin-left: 19rem !important;
           margin-top: 92px !important;
       }
       [data-testid="stSidebarCollapseButton"]{ display: none !important; }
@@ -335,13 +329,13 @@ elif page == "prediksi":
           top: 92px !important;
           left: 0 !important;
           height: calc(100% - 90px) !important;
-          width: 18rem !important;
+          width: 19rem !important;
           z-index: 9999 !important;
           overflow: auto !important;
           box-shadow: none !important;
       }
       [data-testid="stAppViewContainer"] > .main{
-          margin-left: 18rem !important;
+          margin-left: 19rem !important;
           margin-top: 92px !important;
       }
       [data-testid="stSidebarCollapseButton"]{ display: none !important; }
