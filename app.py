@@ -223,8 +223,6 @@ else:
       :root{ --nav-h: 90px; --content-max: 1100px; }
 
       @media (min-width: 901px){
-        [data-testid="stSidebar"]{ display: none !important; }
-        [data-testid="stSidebarCollapseButton"]{ display: none !important; }
 
         [data-testid="stAppViewContainer"] > .main{
           margin-top: var(--nav-h) !important;
@@ -240,8 +238,6 @@ else:
       }
 
       @media (max-width: 900px){
-        [data-testid="stSidebar"]{ display: none !important; }
-        [data-testid="stSidebarCollapseButton"]{ display: none !important; }
         [data-testid="stAppViewContainer"] > .main{
           margin-top: var(--nav-h) !important;
           margin-left: 0 !important;
