@@ -139,82 +139,75 @@ st.markdown(f"""
 if page == "prediksi":
     # DESKTOP: sidebar tetap, konten geser & center
     # MOBILE: hamburger di bawah navbar (kiri), sidebar overlay
-    st.markdown("""
+ st.markdown("""
     <style>
-      :root{
-        --nav-h: 90px;
-        --sb-w: 19rem;
-        --content-max: 1100px;
-      }
+    :root{
+    --nav-h: 90px;
+    --sb-w: 19rem;
+    }
 
-      /* ===== DESKTOP (>=901px) ===== */
-      @media (min-width: 901px){
-        [data-testid="stSidebar"]{
-          position: fixed !important;
-          top: calc(var(--nav-h) + 2px) !important;
-          left: 0 !important;
-          width: var(--sb-w) !important;
-          height: calc(100% - var(--nav-h)) !important;
-          overflow: auto !important;
-          box-shadow: none !important;
-          transform: none !important;
-          z-index: 9999 !important;
-        }
-        [data-testid="stAppViewContainer"] > .main{
-          margin-top: calc(var(--nav-h) + 2px) !important;
-          margin-left: var(--sb-w) !important;
-        }
-        [data-testid="stAppViewContainer"] > .main .block-container{
-          max-width: var(--content-max) !important;
-          margin-left: auto !important;
-          margin-right: auto !important;
-          padding-left: 1.25rem !important;
-          padding-right: 1.25rem !important;
-        }
-        [data-testid="stSidebarCollapseButton"]{ display: none !important; }
-      }
+    /* ===== DESKTOP FIX ===== */
+    @media (min-width: 901px){
+    [data-testid="stSidebar"]{
+        position: fixed !important;
+        top: var(--nav-h) !important;
+        left: 0 !important;
+        width: var(--sb-w) !important;
+        height: calc(100% - var(--nav-h)) !important;
+        overflow-y: auto !important;
+        background-color: var(--color-bg, #111) !important;
+        z-index: 9999 !important;
+        box-shadow: none !important;
+    }
 
-      /* ===== MOBILE (<=900px) ===== */
-      @media (max-width: 900px){
-        /* tombol hamburger */
-        [data-testid="stSidebarCollapseButton"]{
-          position: fixed !important;
-          top: 90px !important;       /* tepat di bawah navbar */
-          left: 8px !important;
-          z-index: 200001 !important;
-          display: flex !important;
-        }
-        [data-testid="stSidebarCollapseButton"] button{
-          padding: 8px 10px !important;
-        }
+    /* konten utama bergeser sejauh sidebar */
+    [data-testid="stAppViewContainer"] > .main{
+        margin-left: var(--sb-w) !important;
+        margin-top: var(--nav-h) !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
 
-        /* sidebar overlay */
-        [data-testid="stSidebar"]{
-          position: fixed !important;
-          top: var(--nav-h) !important;
-          left: 0 !important;
-          width: 80vw !important;
-          max-width: 22rem !important;
-          height: calc(100% - var(--nav-h)) !important;
-          overflow-y: auto !important;
-          background: var(--color-bg, #111) !important;
-          z-index: 200000 !important;
+    [data-testid="stSidebarCollapseButton"]{
+        display: none !important;
+    }
+    }
 
-          transform: translateX(-100%) !important;
-          transition: transform .25s ease-in-out !important;
-        }
-        [data-testid="stSidebar"][aria-expanded="true"]{
-          transform: translateX(0) !important;
-        }
+    /* ===== MOBILE (hamburger di bawah navbar) ===== */
+    @media (max-width: 900px){
+    [data-testid="stSidebarCollapseButton"]{
+        position: fixed !important;
+        top: var(--nav-h) !important;
+        left: 10px !important;
+        z-index: 200001 !important;
+        display: flex !important;
+    }
 
-        /* konten */
-        [data-testid="stAppViewContainer"] > .main{
-          margin-top: var(--nav-h) !important;
-          margin-left: 0 !important;
-        }
-      }
+    [data-testid="stSidebar"]{
+        position: fixed !important;
+        top: var(--nav-h) !important;
+        left: 0 !important;
+        width: 80vw !important;
+        max-width: 22rem !important;
+        height: calc(100% - var(--nav-h)) !important;
+        overflow-y: auto !important;
+        background-color: var(--color-bg, #111) !important;
+        z-index: 200000 !important;
+        transform: translateX(-100%) !important;
+        transition: transform .25s ease-in-out !important;
+    }
+
+    [data-testid="stSidebar"][aria-expanded="true"]{
+        transform: translateX(0) !important;
+    }
+
+    [data-testid="stAppViewContainer"] > .main{
+        margin-left: 0 !important;
+        margin-top: var(--nav-h) !important;
+    }
+    }
     </style>
-    """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)   
 
 else:
     # HOME/TENTANG: tanpa sidebar, center content
