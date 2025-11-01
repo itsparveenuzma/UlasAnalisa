@@ -29,46 +29,36 @@ for k, v in {
 
 st.markdown("""
 <style>
-[data-testid="stSidebarCollapseButton"]{
-  position: fixed !important;
-  top: 92px !important;
-  left: 12px !important;
-  z-index: 200000 !important;
+/* 1) Header Streamlit: tetap “hidup” supaya hamburger berfungsi */
+[data-testid="stHeader"]{
+  height: 0 !important;
+  min-height: 0 !important;
+  visibility: hidden;           /* BUKAN display:none */
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-@media (max-width: 768px){
-  [data-testid="stSidebarCollapseButton"] button {
+/* 2) Offset konten karena navbar kustom kamu fixed di atas (±90px) */
+[data-testid="stAppViewContainer"] > .main{
+  margin-top: 90px !important;
+}
+
+/* 3) Navbar kustom kamu (kalau ada) pastikan z-index besar */
+.navbar{ z-index: 100000 !important; }
+
+/* 4) Pin tombol hamburger agar selalu terlihat di bawah navbar */
+[data-testid="stSidebarCollapseButton"]{
+  position: fixed !important;
+  top: 92px !important;     /* sejajarkan dengan tinggi navbar */
+  left: 12px !important;
+  z-index: 20000 !important;
+}
+
+/* 5) Sedikit rapikan tombol hamburger di layar kecil */
+@media (max-width: 900px){
+  [data-testid="stSidebarCollapseButton"] button{
     padding: 8px 10px !important;
   }
-  [data-testid="stSidebar"]{
-    width: 78vw !important;
-    min-width: 260px !important;
-  }
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<style>
-@media (min-width: 769px){
-
-}
-@media (max-width: 768px){
-  [data-testid="stHeader"]{
-    background: transparent !important;
-    box-shadow: none !important;
-    height: 0 !important;
-    min-height: 0 !important;
-  }
-}
-
-[data-testid="stSidebarCollapseButton"]{
-  position: fixed !important;
-  top: 92px !important;      
-  left: 12px !important;
-  z-index: 200000 !important;
-  display: flex !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -178,7 +168,9 @@ else:
     st.markdown("""
     <style>
     @media (min-width: 769px){
-    [data-testid="stHeader"]{ display: none !important; }
+    [data-testid="stHeader"] {
+    height: 0 !important;
+    visibility: hidden;
     }
 
     @media (max-width: 768px){
@@ -296,38 +288,43 @@ elif page == "prediksi":
     
     st.markdown("""
     <style>
-    /* Pin tombol hamburger */
+    /* Pin tombol hamburger agar selalu terlihat */
     [data-testid="stSidebarCollapseButton"]{
-    position: fixed !important;
-    top: 90px !important;   /* sejajarkan dengan navbar kustommu */
-    left: 12px !important;
-    z-index: 10000 !important;
-    }
-
-    /* Desktop: sidebar menempel kiri, konten digeser */
-    @media (min-width: 769px){
-    [data-testid="stSidebar"]{
         position: fixed !important;
-        top: 90px !important;
-        left: 0 !important;
-        height: calc(100% - 90px) !important;
-        width: 18rem !important;
-        z-index: 9999 !important;
-    }
-    [data-testid="stAppViewContainer"] > .main{
-        margin-left: 18rem !important;
-    }
+        top: 90px !important;   /* sejajarkan dengan navbar kustom */
+        left: 12px !important;
+        z-index: 10000 !important;
     }
 
-    /* Mobile: jadikan sidebar sebagai drawer (tidak menggeser konten) */
-    @media (max-width: 768px){
-    [data-testid="stSidebar"]{
-        width: 80vw !important;
-        min-width: 260px !important;
+    /* Desktop: sidebar nempel kiri, konten digeser */
+    @media (min-width: 901px){
+      [data-testid="stSidebar"]{
+          position: fixed !important;
+          top: 90px !important;
+          left: 0 !important;
+          height: calc(100% - 90px) !important;
+          width: 18rem !important;
+          z-index: 9999 !important;
+      }
+      [data-testid="stAppViewContainer"] > .main{
+          margin-left: 18rem !important;
+      }
     }
-    [data-testid="stAppViewContainer"] > .main{
-        margin-left: 0 !important;
-    }
+
+    /* Mobile: jadikan sidebar seperti drawer (tidak menggeser konten) */
+    @media (max-width: 900px){
+      [data-testid="stSidebar"]{
+          position: fixed;
+          top: 80px;
+          left: 0;
+          width: 100%;
+          height: auto;
+          z-index: 9999;
+          background: #fff;
+      }
+      [data-testid="stAppViewContainer"] > .main{
+          margin-left: 0;
+      }
     }
     </style>
     """, unsafe_allow_html=True)
