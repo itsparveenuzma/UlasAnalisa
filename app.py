@@ -163,46 +163,62 @@ st.markdown(
 if page == "prediksi":
     st.markdown("""
     <style>
-    /* DESKTOP: sidebar fixed kiri, konten geser */
+    /* PREDIKSI: DESKTOP - sidebar selalu terlihat, hamburger disembunyikan */
     @media (min-width: 901px){
       [data-testid="stSidebar"]{
           position: fixed !important;
-          top: 90px !important;                 /* selaras navbar kustom */
+          top: 90px !important;
           left: 0 !important;
           height: calc(100% - 90px) !important;
           width: 18rem !important;
           z-index: 9999 !important;
+          overflow: auto !important;
+          box-shadow: none !important;
       }
       [data-testid="stAppViewContainer"] > .main{
           margin-left: 18rem !important;
+          margin-top: 90px !important;
       }
+      [data-testid="stSidebarCollapseButton"]{ display: none !important; }
     }
 
-    /* MOBILE: sidebar jadi drawer penuh lebar, tidak menggeser konten */
+    /* PREDIKSI: MOBILE - hamburger di bawah navbar, sidebar overlay */
     @media (max-width: 900px){
+      [data-testid="stSidebarCollapseButton"]{
+          position: fixed !important;
+          top: 90px !important;
+          left: 12px !important;
+          z-index: 200001 !important;
+          display: flex !important;
+      }
       [data-testid="stSidebar"]{
           position: fixed !important;
-          top: 80px !important;
+          top: 90px !important;
           left: 0 !important;
-          width: 100% !important;
-          height: auto !important;
-          z-index: 9999 !important;
-          background: #fff !important;
+          width: 80vw !important;
+          max-width: 22rem !important;
+          height: calc(100% - 90px) !important;
+          overflow: auto !important;
+          z-index: 200000 !important;
       }
       [data-testid="stAppViewContainer"] > .main{
+          margin-top: 90px !important;
           margin-left: 0 !important;
       }
     }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 else:
-    # kalau kamu memang ingin menyembunyikan sidebar di halaman lain, ini boleh dipertahankan
     st.markdown("""
     <style>
-      
-      [data-testid="stAppViewContainer"] > .main{ margin-left:0 !important; }
+    @media (min-width: 901px){
+      [data-testid="stSidebar"]{ display: none !important; }
+      [data-testid="stSidebarCollapseButton"]{ display: none !important; }
+      [data-testid="stAppViewContainer"] > .main{ margin-left: 0 !important; }
+    }
+    [data-testid="stAppViewContainer"] > .main{ margin-top: 90px !important; }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # HALAMAN BERANDA
 if page == "home":
@@ -305,69 +321,53 @@ elif page == "tentang":
 
 #HALAMAN PREDIKSI
 elif page == "prediksi":
-    
     st.markdown("""
     <style>
-    /* Pastikan tombol hamburger kelihatan walau header disembunyikan tipis */
-    [data-testid="stHeader"] [data-testid="stSidebarCollapseButton"]{
-  position: fixed !important;
-  top: 90px !important;
-  left: 12px !important;
-  z-index: 200001 !important; /* must be above navbar (100000) */
-  display: flex !important;
-}
-@media (max-width: 900px){
-  [data-testid="stSidebarCollapseButton"] button{ padding: 8px 10px !important; }
-}
-
-    /* Pin tombol hamburger di bawah navbar kustom */
-    [data-testid="stSidebarCollapseButton"]{
-  position: fixed !important;
-  top: 90px !important;
-  left: 12px !important;
-  z-index: 200001 !important; /* must be above navbar (100000) */
-  display: flex !important;
-}
-@media (max-width: 900px){
-  [data-testid="stSidebarCollapseButton"] button{ padding: 8px 10px !important; }
-}
-
-    /* ===== DESKTOP (>=901px): sidebar fixed kiri, konten digeser ===== */
+    /* PREDIKSI: DESKTOP - sidebar selalu terlihat, hamburger disembunyikan */
     @media (min-width: 901px){
-    [data-testid="stSidebar"]{
-        position: fixed !important;
-        top: 90px !important;                        /* selaras navbar */
-        left: 0 !important;
-        width: 18rem !important;
-        height: calc(100vh - 90px) !important;       /* penuh layar */
-        max-height: calc(100vh - 90px) !important;
-        overflow: auto !important;                   /* bisa di-scroll */
-        z-index: 9999 !important;
-    }
-    [data-testid="stAppViewContainer"] > .main{
-        margin-left: 18rem !important;               /* geser konten */
-    }
+      [data-testid="stSidebar"]{
+          position: fixed !important;
+          top: 90px !important;
+          left: 0 !important;
+          height: calc(100% - 90px) !important;
+          width: 18rem !important;
+          z-index: 9999 !important;
+          overflow: auto !important;
+          box-shadow: none !important;
+      }
+      [data-testid="stAppViewContainer"] > .main{
+          margin-left: 18rem !important;
+          margin-top: 90px !important;
+      }
+      [data-testid="stSidebarCollapseButton"]{ display: none !important; }
     }
 
-    /* ===== MOBILE (<=900px): sidebar seperti drawer penuh, tdk geser konten ===== */
+    /* PREDIKSI: MOBILE - hamburger di bawah navbar, sidebar overlay */
     @media (max-width: 900px){
-    [data-testid="stSidebar"]{
-        position: fixed !important;
-        top: 80px !important;                        /* sedikit lebih rapat */
-        left: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        max-height: calc(100vh - 80px) !important;   /* batasi agar muat layar */
-        overflow: auto !important;                   /* bisa di-scroll */
-        background: #fff !important;
-        z-index: 9999 !important;
-    }
-    [data-testid="stAppViewContainer"] > .main{
-        margin-left: 0 !important;                   /* konten tidak bergeser */
-    }
+      [data-testid="stSidebarCollapseButton"]{
+          position: fixed !important;
+          top: 90px !important;
+          left: 12px !important;
+          z-index: 200001 !important;
+          display: flex !important;
+      }
+      [data-testid="stSidebar"]{
+          position: fixed !important;
+          top: 90px !important;
+          left: 0 !important;
+          width: 80vw !important;
+          max-width: 22rem !important;
+          height: calc(100% - 90px) !important;
+          overflow: auto !important;
+          z-index: 200000 !important;
+      }
+      [data-testid="stAppViewContainer"] > .main{
+          margin-top: 90px !important;
+          margin-left: 0 !important;
+      }
     }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
     
     st.title("Prediksi Sentimen dari Link Google Play")
