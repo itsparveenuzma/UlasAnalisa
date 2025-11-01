@@ -209,37 +209,6 @@ if page == "prediksi":
     </style>
     """, unsafe_allow_html=True)   
 
-else:
-    # HOME/TENTANG: tanpa sidebar, center content
-    st.markdown("""
-    <style>
-      :root{ --nav-h: 90px; --content-max: 1100px; }
-
-      @media (min-width: 901px){
-
-        [data-testid="stAppViewContainer"] > .main{
-          margin-top: var(--nav-h) !important;
-          margin-left: 0 !important;
-        }
-        [data-testid="stAppViewContainer"] > .main .block-container{
-          max-width: var(--content-max) !important;
-          margin-left: auto !important;
-          margin-right: auto !important;
-          padding-left: 1.25rem !important;
-          padding-right: 1.25rem !important;
-        }
-      }
-
-      @media (max-width: 900px){
-        [data-testid="stAppViewContainer"] > .main{
-          margin-top: var(--nav-h) !important;
-          margin-left: 0 !important;
-        }
-      }
-    </style>
-    """, unsafe_allow_html=True)
-
-
 # =========================
 # HALAMAN: HOME
 # =========================
