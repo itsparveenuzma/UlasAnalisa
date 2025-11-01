@@ -40,7 +40,7 @@ st.markdown("""
 /* >>> INI PENTING: keluarkan tombol dari efek visibility parent */
 [data-testid="stHeader"] [data-testid="stSidebarCollapseButton"]{
   position: fixed !important;
-  top: 90px !important;
+  top: 92px !important;
   left: 12px !important;
   z-index: 200001 !important; /* must be above navbar (100000) */
   display: flex !important;
@@ -51,7 +51,7 @@ st.markdown("""
 
 /* Konten turun krn navbar kustom fixed ~90px */
 [data-testid="stAppViewContainer"] > .main{
-  margin-top: 90px !important;
+  margin-top: 92px !important;
 }
 
 /* Pastikan navbar kustom di atas segalanya */
@@ -60,7 +60,7 @@ st.markdown("""
 /* Pin tombol hamburger di bawah navbar kustom */
 [data-testid="stSidebarCollapseButton"]{
   position: fixed !important;
-  top: 90px !important;
+  top: 92px !important;
   left: 12px !important;
   z-index: 200001 !important; /* must be above navbar (100000) */
   display: flex !important;
@@ -75,6 +75,8 @@ st.markdown("""
     padding: 8px 10px !important;
   }
 }
+/* MOBILE HAMBURGER POSITION */
+@media (max-width: 900px){[data-testid="stSidebarCollapseButton"]{top:92px !important;}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -166,18 +168,19 @@ if page == "prediksi":
     /* PREDIKSI: DESKTOP - sidebar selalu terlihat, hamburger disembunyikan */
     @media (min-width: 901px){
       [data-testid="stSidebar"]{
+          transform: none !important;
           position: fixed !important;
-          top: 90px !important;
+          top: 92px !important;
           left: 0 !important;
           height: calc(100% - 90px) !important;
-          width: 18rem !important;
+          width: 19rem !important;
           z-index: 9999 !important;
           overflow: auto !important;
           box-shadow: none !important;
       }
       [data-testid="stAppViewContainer"] > .main{
           margin-left: 18rem !important;
-          margin-top: 90px !important;
+          margin-top: 92px !important;
       }
       [data-testid="stSidebarCollapseButton"]{ display: none !important; }
     }
@@ -186,14 +189,14 @@ if page == "prediksi":
     @media (max-width: 900px){
       [data-testid="stSidebarCollapseButton"]{
           position: fixed !important;
-          top: 90px !important;
+          top: 92px !important;
           left: 12px !important;
           z-index: 200001 !important;
           display: flex !important;
       }
       [data-testid="stSidebar"]{
           position: fixed !important;
-          top: 90px !important;
+          top: 92px !important;
           left: 0 !important;
           width: 80vw !important;
           max-width: 22rem !important;
@@ -202,7 +205,7 @@ if page == "prediksi":
           z-index: 200000 !important;
       }
       [data-testid="stAppViewContainer"] > .main{
-          margin-top: 90px !important;
+          margin-top: 92px !important;
           margin-left: 0 !important;
       }
     }
@@ -212,11 +215,12 @@ else:
     st.markdown("""
     <style>
     @media (min-width: 901px){
-      [data-testid="stSidebar"]{ display: none !important; }
+      [data-testid="stSidebar"]{
+          transform: none !important; display: none !important; }
       [data-testid="stSidebarCollapseButton"]{ display: none !important; }
       [data-testid="stAppViewContainer"] > .main{ margin-left: 0 !important; }
     }
-    [data-testid="stAppViewContainer"] > .main{ margin-top: 90px !important; }
+    [data-testid="stAppViewContainer"] > .main{ margin-top: 92px !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -326,8 +330,9 @@ elif page == "prediksi":
     /* PREDIKSI: DESKTOP - sidebar selalu terlihat, hamburger disembunyikan */
     @media (min-width: 901px){
       [data-testid="stSidebar"]{
+          transform: none !important;
           position: fixed !important;
-          top: 90px !important;
+          top: 92px !important;
           left: 0 !important;
           height: calc(100% - 90px) !important;
           width: 18rem !important;
@@ -337,7 +342,7 @@ elif page == "prediksi":
       }
       [data-testid="stAppViewContainer"] > .main{
           margin-left: 18rem !important;
-          margin-top: 90px !important;
+          margin-top: 92px !important;
       }
       [data-testid="stSidebarCollapseButton"]{ display: none !important; }
     }
@@ -346,14 +351,14 @@ elif page == "prediksi":
     @media (max-width: 900px){
       [data-testid="stSidebarCollapseButton"]{
           position: fixed !important;
-          top: 90px !important;
+          top: 92px !important;
           left: 12px !important;
           z-index: 200001 !important;
           display: flex !important;
       }
       [data-testid="stSidebar"]{
           position: fixed !important;
-          top: 90px !important;
+          top: 92px !important;
           left: 0 !important;
           width: 80vw !important;
           max-width: 22rem !important;
@@ -362,7 +367,7 @@ elif page == "prediksi":
           z-index: 200000 !important;
       }
       [data-testid="stAppViewContainer"] > .main{
-          margin-top: 90px !important;
+          margin-top: 92px !important;
           margin-left: 0 !important;
       }
     }
