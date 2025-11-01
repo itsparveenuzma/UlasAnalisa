@@ -29,20 +29,41 @@ for k, v in {
 
 st.markdown("""
 <style>
+/* Desktop & Mobile: pastikan tombol toggle punya z-index tertinggi */
 [data-testid="stSidebarCollapseButton"]{
   position: fixed !important;
-  top: 92px !important;
+  top: 92px !important;          /* 80px tinggi navbar + ~12px margin */
   left: 12px !important;
-  z-index: 200000 !important;
+  z-index: 200000 !important;    /* harus > navbar */
+  display: flex !important;      /* paksa tampil */
 }
 
+/* Mobile drawer width & konten tidak terdorong */
 @media (max-width: 768px){
-  [data-testid="stSidebarCollapseButton"] button {
-    padding: 8px 10px !important;
-  }
   [data-testid="stSidebar"]{
-    width: 78vw !important;
+    width: 80vw !important;
     min-width: 260px !important;
+    z-index: 150000 !important;
+    top: 90px !important;                    /* tepat di bawah navbar */
+    height: calc(100% - 90px) !important;
+  }
+  [data-testid="stAppViewContainer"] > .main{
+    margin-left: 0 !important;              /* konten tidak geser di mobile */
+  }
+}
+
+/* Desktop: sidebar fixed kiri, konten digeser */
+@media (min-width: 769px){
+  [data-testid="stSidebar"]{
+    position: fixed !important;
+    top: 90px !important;
+    left: 0 !important;
+    height: calc(100% - 90px) !important;
+    width: 18rem !important;
+    z-index: 150000 !important;
+  }
+  [data-testid="stAppViewContainer"] > .main{
+    margin-left: 18rem !important;
   }
 }
 </style>
