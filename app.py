@@ -18,11 +18,11 @@ st.set_page_config(
 )
 
 for k, v in {
-    "results": {},          # dict: {"SVM (RBF)": df, "RandomForest": df}
+    "results": {},          
     "app_id": None,
-    "csv_pred": None,       # bytes (csv/xlsx)
-    "csv_dist": None,       # bytes (csv/xlsx)
-    "is_combo": False,      # True saat pilih "Gabungan (SVM + RF)"
+    "csv_pred": None,       
+    "csv_dist": None,       
+    "is_combo": False,      
 }.items():
     if k not in st.session_state:
         st.session_state[k] = v
@@ -151,11 +151,23 @@ if page == "prediksi":
 else:
     st.markdown("""
     <style>
-    [data-testid="stSidebar"] { display: none; }
-    [data-testid="stAppViewContainer"] > .main { margin-left: 0; }
+    /* --- DESKTOP SAJA: sembunyikan header supaya navbar kustom bersih --- */
+    @media (min-width: 769px){
+    [data-testid="stHeader"]{ display: none !important; }
+    }
+
+    /* --- MOBILE: header tetap ada supaya tombol hamburger dirender --- */
+    @media (max-width: 768px){
+    /* Hilangkan background/header default agar tidak ganggu navbar kustom */
+    [data-testid="stHeader"]{
+        background: transparent !important;
+        box-shadow: none !important;
+        height: 0 !important;           /* ‘kosongkan’ tingginya */
+        min-height: 0 !important;
+    }
+    }
     </style>
     """, unsafe_allow_html=True)
-
 
 # HALAMAN BERANDA
 if page == "home":
