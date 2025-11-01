@@ -17,7 +17,7 @@ st.set_page_config(
     page_title="UlasAnalisa – Prediksi Sentimen",
     page_icon="static/logo_ulas.png",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="collapsed",   # mobile butuh hamburger; desktop kita paksa tampil via CSS
 )
 
 # =========================
@@ -37,8 +37,8 @@ for k, v in defaults.items():
 
 # =========================
 # GLOBAL (LIGHT) CSS
-# - tidak memposisikan hamburger di sini agar tidak bentrok
-# - menyetel header agar tipis (tanpa display:none)
+# - header jangan disembunyikan agar hamburger bisa muncul di mobile
+# - beri offset konten karena navbar fixed
 # =========================
 st.markdown("""
 <style>
@@ -46,7 +46,7 @@ st.markdown("""
   --nav-h: 90px;
 }
 
-/* jangan sembunyikan header agar tombol hamburger tetap bisa dipakai */
+/* header Streamlit tetap ada (tipis) */
 [data-testid="stHeader"]{
   background: transparent !important;
   box-shadow: none !important;
@@ -54,7 +54,7 @@ st.markdown("""
   height: auto !important;
 }
 
-/* offset konten default karena ada navbar custom fixed */
+/* offset konten global karena navbar custom fixed */
 [data-testid="stAppViewContainer"] > .main{
   margin-top: var(--nav-h) !important;
 }
@@ -137,95 +137,113 @@ st.markdown(f"""
 # LAYOUT CSS PER-HALAMAN
 # =========================
 if page == "prediksi":
-    # CSS fix sidebar agar tidak ketumpuk
+    # DESKTOP: sidebar tetap, konten geser & center
+    # MOBILE : hamburger di bawah navbar (kiri), sidebar overlay
     st.markdown("""
     <style>
-    :root{
-      --nav-h: 90px;
-      --sb-w: 19rem;
-    }
-
-    /* ===== DESKTOP FIX ===== */
-    @media (min-width: 901px){
-      [data-testid="stSidebar"]{
-        position: fixed !important;
-        top: var(--nav-h) !important;
-        left: 0 !important;
-        width: var(--sb-w) !important;
-        height: calc(100% - var(--nav-h)) !important;
-        overflow-y: auto !important;
-        background-color: var(--color-bg, #111) !important;
-        z-index: 9999 !important;
-        box-shadow: none !important;
+      :root{
+        --nav-h: 90px;
+        --sb-w: 19rem;
+        --content-max: 1100px;
       }
 
-      /* konten utama bergeser sejauh sidebar */
-      [data-testid="stAppViewContainer"] > .main{
-        margin-left: var(--sb-w) !important;
-        margin-top: var(--nav-h) !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+      /* ===== DESKTOP (>=901px): sidebar permanen di kiri ===== */
+      @media (min-width: 901px){
+        [data-testid="stSidebar"]{
+          position: fixed !important;
+          top: var(--nav-h) !important;
+          left: 0 !important;
+          width: var(--sb-w) !important;
+          height: calc(100% - var(--nav-h)) !important;
+          overflow-y: auto !important;
+          background: var(--color-bg, #111) !important;
+          border-right: 1px solid rgba(255,255,255,.08) !important;
+          z-index: 9999 !important;
+          transform: none !important;   /* paksa tampil walau state collapsed */
+          box-shadow: none !important;
+        }
+
+        /* konten geser sejauh lebar sidebar */
+        [data-testid="stAppViewContainer"] > .main{
+          margin-top: var(--nav-h) !important;
+          margin-left: var(--sb-w) !important;
+        }
+
+        [data-testid="stAppViewContainer"] > .main .block-container{
+          max-width: var(--content-max) !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+          padding-left: 1.25rem !important;
+          padding-right: 1.25rem !important;
+        }
+
+        /* sembunyikan tombol collapse di desktop */
+        [data-testid="stSidebarCollapseButton"]{ display: none !important; }
       }
 
-      [data-testid="stSidebarCollapseButton"]{
-        display: none !important;
-      }
-    }
+      /* ===== MOBILE (<=900px): hamburger di bawah navbar, sidebar overlay ===== */
+      @media (max-width: 900px){
+        /* tombol hamburger di bawah navbar kiri */
+        [data-testid="stSidebarCollapseButton"]{
+          position: fixed !important;
+          top: var(--nav-h) !important;   /* tepat di bawah navbar */
+          left: 10px !important;
+          z-index: 200001 !important;
+          display: flex !important;
+        }
 
-    /* ===== MOBILE (hamburger di bawah navbar) ===== */
-    @media (max-width: 900px){
-      [data-testid="stSidebarCollapseButton"]{
-        position: fixed !important;
-        top: var(--nav-h) !important;
-        left: 10px !important;
-        z-index: 200001 !important;
-        display: flex !important;
-      }
+        /* sidebar sebagai drawer/overlay */
+        [data-testid="stSidebar"]{
+          position: fixed !important;
+          top: var(--nav-h) !important;
+          left: 0 !important;
+          width: 80vw !important;
+          max-width: 22rem !important;
+          height: calc(100% - var(--nav-h)) !important;
+          overflow-y: auto !important;
+          background: var(--color-bg, #111) !important;
+          z-index: 200000 !important;
 
-      [data-testid="stSidebar"]{
-        position: fixed !important;
-        top: var(--nav-h) !important;
-        left: 0 !important;
-        width: 80vw !important;
-        max-width: 22rem !important;
-        height: calc(100% - var(--nav-h)) !important;
-        overflow-y: auto !important;
-        background-color: var(--color-bg, #111) !important;
-        z-index: 200000 !important;
-        transform: translateX(-100%) !important;
-        transition: transform .25s ease-in-out !important;
-      }
+          transform: translateX(-100%) !important;
+          transition: transform .25s ease-in-out !important;
+          box-shadow: none !important;
+        }
+        [data-testid="stSidebar"][aria-expanded="true"]{
+          transform: translateX(0) !important;
+        }
 
-      [data-testid="stSidebar"][aria-expanded="true"]{
-        transform: translateX(0) !important;
+        /* konten full width */
+        [data-testid="stAppViewContainer"] > .main{
+          margin-top: var(--nav-h) !important;
+          margin-left: 0 !important;
+        }
       }
-
-      [data-testid="stAppViewContainer"] > .main{
-        margin-left: 0 !important;
-        margin-top: var(--nav-h) !important;
-      }
-    }
     </style>
     """, unsafe_allow_html=True)
 
 else:
-    # CSS untuk halaman lain (Home, Tentang)
+    # HOME/TENTANG: tanpa sidebar, center content
     st.markdown("""
     <style>
-    :root{ --nav-h: 90px; --content-max: 1100px; }
-    [data-testid="stAppViewContainer"] > .main{
-      margin-top: var(--nav-h) !important;
-      margin-left: 0 !important;
-    }
-    [data-testid="stAppViewContainer"] > .main .block-container{
-      max-width: var(--content-max) !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
-      padding-left: 1.25rem !important;
-      padding-right: 1.25rem !important;
-    }
+      :root{ --nav-h: 90px; --content-max: 1100px; }
+
+      [data-testid="stAppViewContainer"] > .main{
+        margin-top: var(--nav-h) !important;
+        margin-left: 0 !important;
+      }
+      [data-testid="stAppViewContainer"] > .main .block-container{
+        max-width: var(--content-max) !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        padding-left: 1.25rem !important;
+        padding-right: 1.25rem !important;
+      }
+
+      /* pastikan tombol collapse tidak tampil di halaman tanpa sidebar */
+      [data-testid="stSidebarCollapseButton"]{ display: none !important; }
     </style>
     """, unsafe_allow_html=True)
+
 
 # =========================
 # HALAMAN: HOME
@@ -332,72 +350,7 @@ elif page == "tentang":
 # HALAMAN: PREDIKSI
 # =========================
 elif page == "prediksi":
-    
-    st.markdown("""
-<style>
-  :root{ --nav-h: 90px; --sb-w: 19rem; --content-max: 1100px; }
 
-  /* DESKTOP */
-  @media (min-width: 901px){
-    [data-testid="stSidebar"]{
-      position: fixed !important;
-      top: var(--nav-h) !important;
-      left: 0 !important;
-      width: var(--sb-w) !important;
-      height: calc(100% - var(--nav-h)) !important;
-      overflow: auto !important;
-      transform: none !important;
-      box-shadow: none !important;
-      z-index: 9999 !important;
-      border-right: 1px solid rgba(255,255,255,.08);
-    }
-    [data-testid="stAppViewContainer"] > .main{
-      margin-top: var(--nav-h) !important;
-      margin-left: var(--sb-w) !important;
-    }
-    [data-testid="stAppViewContainer"] > .main .block-container{
-      max-width: var(--content-max) !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
-      padding-left: 1.25rem !important;
-      padding-right: 1.25rem !important;
-    }
-    [data-testid="stSidebarCollapseButton"]{ display:none !important; }
-  }
-
-  /* MOBILE */
-  @media (max-width: 900px){
-    [data-testid="stSidebarCollapseButton"]{
-      position: fixed !important;
-      top: var(--nav-h) !important;
-      left: 8px !important;
-      z-index: 200001 !important;
-      display: flex !important;
-    }
-    [data-testid="stSidebar"]{
-      position: fixed !important;
-      top: var(--nav-h) !important;
-      left: 0 !important;
-      width: 80vw !important;
-      max-width: 22rem !important;
-      height: calc(100% - var(--nav-h)) !important;
-      overflow-y: auto !important;
-      background: var(--color-bg, #111) !important;
-      z-index: 200000 !important;
-      transform: translateX(-100%) !important;
-      transition: transform .25s ease-in-out !important;
-    }
-    [data-testid="stSidebar"][aria-expanded="true"]{
-      transform: translateX(0) !important;
-    }
-    [data-testid="stAppViewContainer"] > .main{
-      margin-top: var(--nav-h) !important;
-      margin-left: 0 !important;
-    }
-  }
-</style>
-""", unsafe_allow_html=True)
-    
     st.title("Prediksi Sentimen dari Link Google Play")
     st.caption("Masukkan link aplikasi dari Google Play Store, lalu sistem akan prediksi sentimennya")
 
