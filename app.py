@@ -145,9 +145,9 @@ elif page == "prediksi":
     (function() {
     function openSidebarIfCollapsed() {
         try {
-        const doc = window.parent.document;
-        const btn = doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
-        const sb  = doc.querySelector('[data-testid="stSidebar"]');
+        const d = window.parent.document;
+        const btn = d.querySelector('[data-testid="stSidebarCollapseButton"] button');
+        const sb  = d.querySelector('[data-testid="stSidebar"]');
         if (!btn || !sb) return;
         const isCollapsed = sb.getAttribute('aria-expanded') === 'false';
         const isDesktop   = window.innerWidth >= 901;
