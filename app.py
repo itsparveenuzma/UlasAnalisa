@@ -29,21 +29,17 @@ for k, v in {
 
 st.markdown("""
 <style>
-/* Paku tombol collapse/expand sidebar di pojok kiri-atas dan taruh di atas header kustom */
 [data-testid="stSidebarCollapseButton"]{
   position: fixed !important;
-  top: 12px !important;
+  top: 92px !important;
   left: 12px !important;
-  z-index: 10000 !important;
+  z-index: 200000 !important;
 }
 
-/* Kalau kamu punya header/navbar kustom yang fixed, jangan nutup area kiri-atas */
 @media (max-width: 768px){
-  /* Lebarin klik area tombol di mobile biar gampang ditekan */
   [data-testid="stSidebarCollapseButton"] button {
     padding: 8px 10px !important;
   }
-  /* Biar sidebar nggak melebar full menutupi tombol */
   [data-testid="stSidebar"]{
     width: 78vw !important;
     min-width: 260px !important;
@@ -262,6 +258,35 @@ elif page == "tentang":
 
 #HALAMAN PREDIKSI
 elif page == "prediksi":
+    
+    st.markdown("""
+    <style>
+    /* Desktop: sidebar “menempel” di kiri, konten digeser */
+    [data-testid="stSidebar"]{
+    position: fixed;
+    top: 90px;                 /* pas persis di bawah navbar */
+    left: 0;
+    height: calc(100% - 90px);
+    width: 18rem;
+    z-index: 150000;           /* cukup tinggi, tapi < tombol */
+    }
+    [data-testid="stAppViewContainer"] > .main{
+    margin-left: 18rem;
+    }
+
+    /* Mobile: jadikan drawer, jangan geser konten */
+    @media (max-width: 768px){
+    [data-testid="stSidebar"]{
+        width: 80vw;
+        min-width: 260px;
+    }
+    [data-testid="stAppViewContainer"] > .main{
+        margin-left: 0 !important;
+    }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     st.title("Prediksi Sentimen dari Link Google Play")
     st.caption("Masukkan link aplikasi dari Google Play Store, lalu sistem akan prediksi sentimennya")
 
