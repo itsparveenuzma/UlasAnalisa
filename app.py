@@ -356,6 +356,72 @@ elif page == "tentang":
 # HALAMAN: PREDIKSI
 # =========================
 elif page == "prediksi":
+    
+    st.markdown("""
+<style>
+  :root{ --nav-h: 90px; --sb-w: 19rem; --content-max: 1100px; }
+
+  /* DESKTOP */
+  @media (min-width: 901px){
+    [data-testid="stSidebar"]{
+      position: fixed !important;
+      top: var(--nav-h) !important;
+      left: 0 !important;
+      width: var(--sb-w) !important;
+      height: calc(100% - var(--nav-h)) !important;
+      overflow: auto !important;
+      transform: none !important;
+      box-shadow: none !important;
+      z-index: 9999 !important;
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+    [data-testid="stAppViewContainer"] > .main{
+      margin-top: var(--nav-h) !important;
+      margin-left: var(--sb-w) !important;
+    }
+    [data-testid="stAppViewContainer"] > .main .block-container{
+      max-width: var(--content-max) !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      padding-left: 1.25rem !important;
+      padding-right: 1.25rem !important;
+    }
+    [data-testid="stSidebarCollapseButton"]{ display:none !important; }
+  }
+
+  /* MOBILE */
+  @media (max-width: 900px){
+    [data-testid="stSidebarCollapseButton"]{
+      position: fixed !important;
+      top: var(--nav-h) !important;
+      left: 8px !important;
+      z-index: 200001 !important;
+      display: flex !important;
+    }
+    [data-testid="stSidebar"]{
+      position: fixed !important;
+      top: var(--nav-h) !important;
+      left: 0 !important;
+      width: 80vw !important;
+      max-width: 22rem !important;
+      height: calc(100% - var(--nav-h)) !important;
+      overflow-y: auto !important;
+      background: var(--color-bg, #111) !important;
+      z-index: 200000 !important;
+      transform: translateX(-100%) !important;
+      transition: transform .25s ease-in-out !important;
+    }
+    [data-testid="stSidebar"][aria-expanded="true"]{
+      transform: translateX(0) !important;
+    }
+    [data-testid="stAppViewContainer"] > .main{
+      margin-top: var(--nav-h) !important;
+      margin-left: 0 !important;
+    }
+  }
+</style>
+""", unsafe_allow_html=True)
+    
     st.title("Prediksi Sentimen dari Link Google Play")
     st.caption("Masukkan link aplikasi dari Google Play Store, lalu sistem akan prediksi sentimennya")
 
