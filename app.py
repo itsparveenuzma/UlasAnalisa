@@ -31,16 +31,22 @@ st.markdown("""
 <style>
 /* JANGAN display:none; biar hamburger tetap hidup */
 [data-testid="stHeader"]{
-  height: 0 !important;
-  min-height: 0 !important;
-  visibility: hidden;                 /* bukan display:none */
   background: transparent !important;
   box-shadow: none !important;
+  min-height: 0 !important;
+  height: auto !important;
 }
 
 /* >>> INI PENTING: keluarkan tombol dari efek visibility parent */
 [data-testid="stHeader"] [data-testid="stSidebarCollapseButton"]{
-  visibility: visible !important;     /* override pewarisan visibility */
+  position: fixed !important;
+  top: 90px !important;
+  left: 12px !important;
+  z-index: 200001 !important; /* must be above navbar (100000) */
+  display: flex !important;
+}
+@media (max-width: 900px){
+  [data-testid="stSidebarCollapseButton"] button{ padding: 8px 10px !important; }
 }
 
 /* Konten turun krn navbar kustom fixed ~90px */
@@ -56,8 +62,11 @@ st.markdown("""
   position: fixed !important;
   top: 90px !important;
   left: 12px !important;
-  z-index: 20000 !important;
+  z-index: 200001 !important; /* must be above navbar (100000) */
   display: flex !important;
+}
+@media (max-width: 900px){
+  [data-testid="stSidebarCollapseButton"] button{ padding: 8px 10px !important; }
 }
 
 /* Rapikan tombol hamburger di layar kecil */
@@ -190,7 +199,7 @@ else:
     # kalau kamu memang ingin menyembunyikan sidebar di halaman lain, ini boleh dipertahankan
     st.markdown("""
     <style>
-      [data-testid="stSidebar"]{ display:none !important; }
+      
       [data-testid="stAppViewContainer"] > .main{ margin-left:0 !important; }
     </style>
     """, unsafe_allow_html=True)
@@ -301,17 +310,27 @@ elif page == "prediksi":
     <style>
     /* Pastikan tombol hamburger kelihatan walau header disembunyikan tipis */
     [data-testid="stHeader"] [data-testid="stSidebarCollapseButton"]{
-    visibility: visible !important;
-    }
+  position: fixed !important;
+  top: 90px !important;
+  left: 12px !important;
+  z-index: 200001 !important; /* must be above navbar (100000) */
+  display: flex !important;
+}
+@media (max-width: 900px){
+  [data-testid="stSidebarCollapseButton"] button{ padding: 8px 10px !important; }
+}
 
     /* Pin tombol hamburger di bawah navbar kustom */
     [data-testid="stSidebarCollapseButton"]{
-    position: fixed !important;
-    top: 90px !important;      /* sejajarkan dgn tinggi navbar kustom */
-    left: 12px !important;
-    z-index: 20000 !important;
-    display: flex !important;
-    }
+  position: fixed !important;
+  top: 90px !important;
+  left: 12px !important;
+  z-index: 200001 !important; /* must be above navbar (100000) */
+  display: flex !important;
+}
+@media (max-width: 900px){
+  [data-testid="stSidebarCollapseButton"] button{ padding: 8px 10px !important; }
+}
 
     /* ===== DESKTOP (>=901px): sidebar fixed kiri, konten digeser ===== */
     @media (min-width: 901px){
