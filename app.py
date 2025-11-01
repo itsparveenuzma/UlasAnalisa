@@ -159,44 +159,53 @@ if page == "prediksi":
     <style>
       :root{
         --nav-h: 90px;     /* tinggi navbar */
-        --sb-w: 19rem;     /* lebar sidebar desktop */
+        --sb-w: 19rem;     /* lebar sidebar */
+        --content-max: 1100px; /* lebar maksimum area konten (biar mirip gambar 2) */
       }
 
-      /* ========== DESKTOP: sidebar selalu tampil ========== */
+      /* ================= DESKTOP ================= */
       @media (min-width: 901px){
+        /* Sidebar selalu tampil, fixed di kiri */
         [data-testid="stSidebar"]{
           position: fixed !important;
-          top: calc(var(--nav-h) + 2px) !important;  /* sejajar bawah navbar */
+          top: calc(var(--nav-h) + 2px) !important;
           left: 0 !important;
           width: var(--sb-w) !important;
           height: calc(100% - var(--nav-h)) !important;
           overflow: auto !important;
+          transform: none !important;
           box-shadow: none !important;
-          transform: none !important;                /* jangan ada animasi */
           z-index: 9999 !important;
         }
+
+        /* Geser main agar tidak tertutup sidebar */
         [data-testid="stAppViewContainer"] > .main{
           margin-top: calc(var(--nav-h) + 2px) !important;
-          margin-left: var(--sb-w) !important;       /* geser konten sesuai lebar sidebar */
+          margin-left: var(--sb-w) !important;
         }
+
+        /* Batasi lebar block-container & center seperti gambar 2 */
+        [data-testid="stAppViewContainer"] > .main .block-container{
+          max-width: var(--content-max) !important; /* ~1100px */
+          margin-left: auto !important;
+          margin-right: auto !important;
+          padding-left: 1.25rem !important;
+          padding-right: 1.25rem !important;
+        }
+
+        /* Desktop tak perlu hamburger */
         [data-testid="stSidebarCollapseButton"]{ display:none !important; }
       }
 
-      /* ========== MOBILE: sidebar overlay + hamburger di bawah navbar kiri logo ========== */
+      /* ============== MOBILE (biarkan seperti sebelumnya) ============== */
       @media (max-width: 900px){
-        /* tombol hamburger */
         [data-testid="stSidebarCollapseButton"]{
           position: fixed !important;
-          top: calc(var(--nav-h) - 6px) !important;  /* naikkan agar sejajar navbar */
-          left: 8px !important;                      /* pindah ke dalam area navbar kiri */
+          top: 90px !important;
+          left: 8px !important;
           z-index: 200001 !important;
           display: flex !important;
         }
-        [data-testid="stSidebarCollapseButton"] button{
-          padding: 8px 10px !important;
-        }
-
-        /* panel sidebar overlay */
         [data-testid="stSidebar"]{
           position: fixed !important;
           top: var(--nav-h) !important;
@@ -207,16 +216,12 @@ if page == "prediksi":
           overflow-y: auto !important;
           background: var(--color-bg, #111) !important;
           z-index: 200000 !important;
-
-          /* kunci anti "ketumpuk" */
           transform: translateX(-100%) !important;
           transition: transform .25s ease-in-out !important;
         }
         [data-testid="stSidebar"][aria-expanded="true"]{
           transform: translateX(0) !important;
         }
-
-        /* konten */
         [data-testid="stAppViewContainer"] > .main{
           margin-top: var(--nav-h) !important;
           margin-left: 0 !important;
