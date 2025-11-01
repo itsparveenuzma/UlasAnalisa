@@ -17,6 +17,41 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+for k, v in {
+    "results": {},          # dict: {"SVM (RBF)": df, "RandomForest": df}
+    "app_id": None,
+    "csv_pred": None,       # bytes (csv/xlsx)
+    "csv_dist": None,       # bytes (csv/xlsx)
+    "is_combo": False,      # True saat pilih "Gabungan (SVM + RF)"
+}.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
+
+st.markdown("""
+<style>
+/* Paku tombol collapse/expand sidebar di pojok kiri-atas dan taruh di atas header kustom */
+[data-testid="stSidebarCollapseButton"]{
+  position: fixed !important;
+  top: 12px !important;
+  left: 12px !important;
+  z-index: 10000 !important;
+}
+
+/* Kalau kamu punya header/navbar kustom yang fixed, jangan nutup area kiri-atas */
+@media (max-width: 768px){
+  /* Lebarin klik area tombol di mobile biar gampang ditekan */
+  [data-testid="stSidebarCollapseButton"] button {
+    padding: 8px 10px !important;
+  }
+  /* Biar sidebar nggak melebar full menutupi tombol */
+  [data-testid="stSidebar"]{
+    width: 78vw !important;
+    min-width: 260px !important;
+  }
+}
+</style>
+""", unsafe_allow_html=True)
+
 #LOGO base64
 def img_to_base64(path: str) -> str:
     with open(path, "rb") as f:
@@ -222,7 +257,7 @@ elif page == "tentang":
         st.markdown("Tri Sutrisno, S.Si., M.Sc.")
     with col2:
         st.markdown("### Institusi")
-        st.image("static/logo_untar.png", width=180)
+        st.image("static/Logo_untar.png", width=180)
         st.markdown("**Universitas Tarumanagara**")
 
 #HALAMAN PREDIKSI
