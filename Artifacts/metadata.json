@@ -1,0 +1,12 @@
+{
+  "created_at": "2025-10-30 04:21:02",
+  "vectorizer": "sklearn.feature_extraction.text.TfidfVectorizer",
+  "models": [
+    "svm_rbf_model.joblib",
+    "random_forest_model.joblib"
+  ],
+  "labels": {
+    "negative": 0,
+    "positive": 1
+  }
+}
