@@ -29,32 +29,33 @@ for k, v in {
 
 st.markdown("""
 <style>
-/* 1) Header Streamlit: tetap “hidup” supaya hamburger berfungsi */
+/* JANGAN display:none; biar hamburger tetap hidup */
 [data-testid="stHeader"]{
   height: 0 !important;
   min-height: 0 !important;
-  visibility: hidden;           /* BUKAN display:none */
+  visibility: hidden;                 /* bukan display:none */
   background: transparent !important;
   box-shadow: none !important;
 }
 
-/* 2) Offset konten karena navbar kustom kamu fixed di atas (±90px) */
+/* Konten turun krn navbar kustom fixed ~90px */
 [data-testid="stAppViewContainer"] > .main{
   margin-top: 90px !important;
 }
 
-/* 3) Navbar kustom kamu (kalau ada) pastikan z-index besar */
+/* Pastikan navbar kustom di atas segalanya */
 .navbar{ z-index: 100000 !important; }
 
-/* 4) Pin tombol hamburger agar selalu terlihat di bawah navbar */
+/* Pin tombol hamburger di bawah navbar kustom */
 [data-testid="stSidebarCollapseButton"]{
   position: fixed !important;
-  top: 92px !important;     /* sejajarkan dengan tinggi navbar */
+  top: 90px !important;
   left: 12px !important;
   z-index: 20000 !important;
+  display: flex !important;
 }
 
-/* 5) Sedikit rapikan tombol hamburger di layar kecil */
+/* Rapikan tombol hamburger di layar kecil */
 @media (max-width: 900px){
   [data-testid="stSidebarCollapseButton"] button{
     padding: 8px 10px !important;
@@ -86,9 +87,6 @@ tentang_active = "active" if page == "tentang" else ""
 st.markdown(
     f"""
 <style>
-[data-testid="stHeader"] {{
-    display: none;
-}}
 .navbar {{
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -151,36 +149,44 @@ st.markdown(
 if page == "prediksi":
     st.markdown("""
     <style>
-    [data-testid="stSidebar"] {
-        position: fixed;
-        top: 90px;
-        left: 0;
-        height: 100%;
-        width: 18rem;
-        z-index: 99999;
+    /* DESKTOP: sidebar fixed kiri, konten geser */
+    @media (min-width: 901px){
+      [data-testid="stSidebar"]{
+          position: fixed !important;
+          top: 90px !important;                 /* selaras navbar kustom */
+          left: 0 !important;
+          height: calc(100% - 90px) !important;
+          width: 18rem !important;
+          z-index: 9999 !important;
+      }
+      [data-testid="stAppViewContainer"] > .main{
+          margin-left: 18rem !important;
+      }
     }
-    [data-testid="stAppViewContainer"] > .main {
-        margin-left: 18rem;
+
+    /* MOBILE: sidebar jadi drawer penuh lebar, tidak menggeser konten */
+    @media (max-width: 900px){
+      [data-testid="stSidebar"]{
+          position: fixed !important;
+          top: 80px !important;
+          left: 0 !important;
+          width: 100% !important;
+          height: auto !important;
+          z-index: 9999 !important;
+          background: #fff !important;
+      }
+      [data-testid="stAppViewContainer"] > .main{
+          margin-left: 0 !important;
+      }
     }
     </style>
     """, unsafe_allow_html=True)
 else:
+    # kalau kamu memang ingin menyembunyikan sidebar di halaman lain, ini boleh dipertahankan
     st.markdown("""
     <style>
-    @media (min-width: 769px){
-    [data-testid="stHeader"] {
-    height: 0 !important;
-    visibility: hidden;
-    }
-
-    @media (max-width: 768px){
-    [data-testid="stHeader"]{
-        background: transparent !important;
-        box-shadow: none !important;
-        height: 0 !important;           
-        min-height: 0 !important;
-    }
-    }
+      [data-testid="stSidebar"]{ display:none !important; }
+      [data-testid="stAppViewContainer"] > .main{ margin-left:0 !important; }
     </style>
     """, unsafe_allow_html=True)
 
