@@ -38,6 +38,11 @@ st.markdown("""
   box-shadow: none !important;
 }
 
+/* >>> INI PENTING: keluarkan tombol dari efek visibility parent */
+[data-testid="stHeader"] [data-testid="stSidebarCollapseButton"]{
+  visibility: visible !important;     /* override pewarisan visibility */
+}
+
 /* Konten turun krn navbar kustom fixed ~90px */
 [data-testid="stAppViewContainer"] > .main{
   margin-top: 90px !important;
@@ -294,46 +299,57 @@ elif page == "prediksi":
     
     st.markdown("""
     <style>
-    /* Pin tombol hamburger agar selalu terlihat */
+    /* Pastikan tombol hamburger kelihatan walau header disembunyikan tipis */
+    [data-testid="stHeader"] [data-testid="stSidebarCollapseButton"]{
+    visibility: visible !important;
+    }
+
+    /* Pin tombol hamburger di bawah navbar kustom */
     [data-testid="stSidebarCollapseButton"]{
-        position: fixed !important;
-        top: 90px !important;   /* sejajarkan dengan navbar kustom */
-        left: 12px !important;
-        z-index: 10000 !important;
+    position: fixed !important;
+    top: 90px !important;      /* sejajarkan dgn tinggi navbar kustom */
+    left: 12px !important;
+    z-index: 20000 !important;
+    display: flex !important;
     }
 
-    /* Desktop: sidebar nempel kiri, konten digeser */
+    /* ===== DESKTOP (>=901px): sidebar fixed kiri, konten digeser ===== */
     @media (min-width: 901px){
-      [data-testid="stSidebar"]{
-          position: fixed !important;
-          top: 90px !important;
-          left: 0 !important;
-          height: calc(100% - 90px) !important;
-          width: 18rem !important;
-          z-index: 9999 !important;
-      }
-      [data-testid="stAppViewContainer"] > .main{
-          margin-left: 18rem !important;
-      }
+    [data-testid="stSidebar"]{
+        position: fixed !important;
+        top: 90px !important;                        /* selaras navbar */
+        left: 0 !important;
+        width: 18rem !important;
+        height: calc(100vh - 90px) !important;       /* penuh layar */
+        max-height: calc(100vh - 90px) !important;
+        overflow: auto !important;                   /* bisa di-scroll */
+        z-index: 9999 !important;
+    }
+    [data-testid="stAppViewContainer"] > .main{
+        margin-left: 18rem !important;               /* geser konten */
+    }
     }
 
-    /* Mobile: jadikan sidebar seperti drawer (tidak menggeser konten) */
+    /* ===== MOBILE (<=900px): sidebar seperti drawer penuh, tdk geser konten ===== */
     @media (max-width: 900px){
-      [data-testid="stSidebar"]{
-          position: fixed;
-          top: 80px;
-          left: 0;
-          width: 100%;
-          height: auto;
-          z-index: 9999;
-          background: #fff;
-      }
-      [data-testid="stAppViewContainer"] > .main{
-          margin-left: 0;
-      }
+    [data-testid="stSidebar"]{
+        position: fixed !important;
+        top: 80px !important;                        /* sedikit lebih rapat */
+        left: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: calc(100vh - 80px) !important;   /* batasi agar muat layar */
+        overflow: auto !important;                   /* bisa di-scroll */
+        background: #fff !important;
+        z-index: 9999 !important;
+    }
+    [data-testid="stAppViewContainer"] > .main{
+        margin-left: 0 !important;                   /* konten tidak bergeser */
+    }
     }
     </style>
     """, unsafe_allow_html=True)
+
     
     st.title("Prediksi Sentimen dari Link Google Play")
     st.caption("Masukkan link aplikasi dari Google Play Store, lalu sistem akan prediksi sentimennya")
