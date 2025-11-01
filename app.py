@@ -1,217 +1,171 @@
-import io
-import re
-import base64
+import io, re, base64
 from pathlib import Path
-
 import pandas as pd
 import joblib
 import streamlit as st
 from google_play_scraper import app as gp_app, reviews, Sort
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-# =========================
-# PAGE CONFIG
-# =========================
+# ---------------- Page config: biarkan sidebar default (desktop aman)
 st.set_page_config(
     page_title="UlasAnalisa – Prediksi Sentimen",
     page_icon="static/logo_ulas.png",
     layout="wide",
-    initial_sidebar_state="expanded",   # <-- Desktop: sidebar tampil normal (tidak ketumpuk)
+    initial_sidebar_state="expanded",   # desktop: sidebar tampil normal, tidak ketumpuk
 )
 
-# =========================
-# SESSION STATE
-# =========================
-defaults = {
-    "results": {},
-    "app_id": None,
-    "csv_pred": None,
-    "csv_dist": None,
-    "is_combo": False,
-}
-for k, v in defaults.items():
-    if k not in st.session_state:
-        st.session_state[k] = v
+# ---------------- State
+for k, v in {
+    "results": {}, "app_id": None, "csv_pred": None, "csv_dist": None, "is_combo": False
+}.items():
+    if k not in st.session_state: st.session_state[k] = v
 
-# =========================
-# GLOBAL CSS (ringan & aman)
-# =========================
+# ---------------- Global CSS (tidak menyentuh sidebar untuk desktop)
 st.markdown("""
 <style>
-:root{ --nav-h: 90px; }
+:root{ --nav-h: 80px; } /* samakan dengan tinggi navbar di bawah */
 
-/* Jangan sembunyikan header, biarkan tombol hamburger bisa digunakan */
+/* header jangan dihilangkan - hamburger butuh ini */
 [data-testid="stHeader"]{
-  background: transparent !important;
-  box-shadow: none !important;
-  min-height: 0 !important;
-  height: auto !important;
+  background: transparent !important; box-shadow:none !important; min-height:0 !important; height:auto !important;
 }
 
-/* Offset konten karena navbar custom fixed */
+/* offset konten karena navbar fixed */
 [data-testid="stAppViewContainer"] > .main{ margin-top: var(--nav-h) !important; }
 
-/* Navbar */
-.navbar{ z-index: 1000 !important; }  /* biar sidebar (overlay) bisa di atasnya saat mobile */
+/* navbar */
+.navbar{ z-index: 1000 !important; }
 
-/* --- MOBILE ONLY: tombol hamburger di bawah navbar + sidebar di bawah navbar --- */
+/* MOBILE ONLY: pindahkan hamburger di bawah navbar. Tidak ubah layout desktop. */
 @media (max-width: 900px){
   [data-testid="stSidebarCollapseButton"]{
-    position: fixed !important;
-    top: var(--nav-h) !important;      /* tepat di bawah navbar custom */
-    left: 10px !important;
-    z-index: 1002 !important;
-    display: flex !important;
+    position: fixed !important; top: var(--nav-h) !important; left: 10px !important;
+    z-index: 1002 !important; display: flex !important;
   }
+  /* Sidebar overlay tetap milik Streamlit; hanya digeser ke bawah navbar */
   [data-testid="stSidebar"]{
-    position: fixed !important;
-    top: var(--nav-h) !important;      /* geser sidebar di bawah navbar */
-    height: calc(100% - var(--nav-h)) !important;
-    z-index: 1001 !important;          /* di atas navbar */
+    top: var(--nav-h) !important; height: calc(100% - var(--nav-h)) !important; z-index: 1001 !important;
   }
 }
 </style>
 """, unsafe_allow_html=True)
 
-# =========================
-# Helpers
-# =========================
+# ---------------- Helpers
 def img_to_base64(path: str) -> str:
-    with open(path, "rb") as f:
-        return base64.b64encode(f.read()).decode()
+    with open(path, "rb") as f: return base64.b64encode(f.read()).decode()
 
-# =========================
-# NAVBAR (custom)
-# =========================
-logo_left_b64 = img_to_base64("static/logo_ulas.png")
+# ---------------- Navbar (custom ringan)
+logo_left_b64  = img_to_base64("static/logo_ulas.png")
 logo_right_b64 = img_to_base64("static/fti_untar.png")
-
 try:
     page = st.query_params.get("page", "home")
 except AttributeError:
     page = st.experimental_get_query_params().get("page", ["home"])[0]
-
-home_active    = "active" if page == "home"     else ""
-pred_active    = "active" if page == "prediksi" else ""
-tentang_active = "active" if page == "tentang"  else ""
+home_a  = "active" if page=="home" else ""
+pred_a  = "active" if page=="prediksi" else ""
+tent_a  = "active" if page=="tentang" else ""
 
 st.markdown(f"""
 <style>
 .navbar {{
-  position: fixed; top: 0; left: 0; right: 0;
-  height: 80px; background: #fff;
-  display: flex; align-items: center;
-  padding: 0 1.5rem;
-  border-bottom: 3px solid #b71c1c;
+  position: fixed; top:0; left:0; right:0; height:80px; background:#fff;
+  display:flex; align-items:center; padding:0 1.5rem; border-bottom:3px solid #b71c1c;
 }}
-[data-testid="stAppViewContainer"] > .main {{ margin-top: var(--nav-h); }}
-.nav-left, .nav-right {{ width: 220px; display: flex; justify-content: center; align-items: center; }}
-.nav-center {{ flex: 1; display: flex; justify-content: center; gap: 2.5rem; }}
-.nav-center a {{ text-decoration: none; color: #444; font-weight: 500; }}
-.nav-center a.active {{ color: #b71c1c; border-bottom: 2px solid #b71c1c; padding-bottom: 4px; }}
-.logo-left  {{ height: 150px; }}
-.logo-right {{ height: 65px; }}
+.nav-left,.nav-right {{ width:220px; display:flex; justify-content:center; align-items:center; }}
+.nav-center {{ flex:1; display:flex; justify-content:center; gap:2.5rem; }}
+.nav-center a {{ text-decoration:none; color:#444; font-weight:500; }}
+.nav-center a.active {{ color:#b71c1c; border-bottom:2px solid #b71c1c; padding-bottom:4px; }}
+.logo-left{{ height:150px; }} .logo-right{{ height:65px; }}
 </style>
-
 <div class="navbar">
-  <div class="nav-left">
-    <img src="data:image/png;base64,{logo_left_b64}" class="logo-left">
-  </div>
+  <div class="nav-left"><img src="data:image/png;base64,{logo_left_b64}" class="logo-left"></div>
   <div class="nav-center">
-    <a href="?page=home" target="_self" class="{home_active}">Beranda</a>
-    <a href="?page=prediksi" target="_self" class="{pred_active}">Prediksi</a>
-    <a href="?page=tentang" target="_self" class="{tentang_active}">Tentang</a>
+    <a href="?page=home" target="_self" class="{home_a}">Beranda</a>
+    <a href="?page=prediksi" target="_self" class="{pred_a}">Prediksi</a>
+    <a href="?page=tentang" target="_self" class="{tent_a}">Tentang</a>
   </div>
-  <div class="nav-right">
-    <img src="data:image/png;base64,{logo_right_b64}" class="logo-right">
-  </div>
+  <div class="nav-right"><img src="data:image/png;base64,{logo_right_b64}" class="logo-right"></div>
 </div>
 """, unsafe_allow_html=True)
 
-# =========================
-# HOME
-# =========================
+# ---------------- HOME
 if page == "home":
     st.markdown("## Selamat datang di **UlasAnalisa**")
     st.markdown("### Apa itu **UlasAnalisa?**")
-    st.markdown("""
-    **UlasAnalisa** membantu menganalisis sentimen ulasan aplikasi Google Play.
-    Hasil bisa diunduh sebagai **CSV**.
-    """)
-
-    st.markdown("### Bagaimana Cara Memakainya?")
-    c1, c2 = st.columns([1,1])
-    with c1: st.image("static/1.png", caption="Website Google Play", use_container_width=True)
-    with c2:
-        st.markdown("### Step 1 (Website)")
-        st.write("Copy link aplikasi dari halaman Google Play.")
-
+    st.write("Analisis sentimen ulasan Google Play otomatis. Hasil bisa diunduh **CSV**.")
+    st.markdown("---"); st.write("### Cara pakai singkat")
+    c1,c2 = st.columns([1,1])
+    with c1: st.image("static/1.png", use_container_width=True)
+    with c2: st.write("Step 1: Copy URL aplikasi dari Google Play (web).")
     st.markdown("---")
-    st.markdown("### Step 1 (Handphone)")
-    sp1, a, b, c, sp2 = st.columns([1,2,2,2,1])
-    with a: st.image("static/2.png", width=230)
-    with b: st.image("static/3.png", width=230)
-    with c: st.image("static/4.png", width=230)
-    st.write("Di HP: buka Play Store → **⋮ → Share → Copy URL**.")
-
+    st.write("Step 1 (HP): Play Store → ⋮ → Share → Copy URL.")
+    a,b,c = st.columns(3)
+    with a: st.image("static/2.png", use_container_width=True)
+    with b: st.image("static/3.png", use_container_width=True)
+    with c: st.image("static/4.png", use_container_width=True)
     st.markdown("---")
-    c1, c2 = st.columns([1,1])
+    c1,c2 = st.columns([1,1])
     with c1: st.image("static/5.png", use_container_width=True)
-    with c2:
-        st.markdown("### Step 2")
-        st.write("Paste URL ke halaman **Prediksi**.")
-
+    with c2: st.write("Step 2: Paste URL di halaman **Prediksi**.")
     st.markdown("---")
-    c1, c2 = st.columns([1,1])
+    c1,c2 = st.columns([1,1])
     with c1: st.image("static/6.png", use_container_width=True)
-    with c2:
-        st.markdown("### Step 3")
-        st.write("Atur model, bahasa, negara, jumlah ulasan, urutan.")
-    st.markdown("---")
-    c1, c2 = st.columns([1,1])
-    with c1: st.image("static/7.png", use_container_width=True)
-    with c2:
-        st.markdown("### Step 4")
-        st.write("Klik **Prediksi** untuk melihat hasil & tombol unduhan.")
+    with c2: st.write("Step 3: Atur model, bahasa, negara, jumlah ulasan, urutan → klik **Prediksi**.")
 
-
-# =========================
-# TENTANG
-# =========================
+# ---------------- TENTANG
 elif page == "tentang":
     st.markdown("### Pengembang Website")
-    c1, c2 = st.columns([1,2])
+    c1,c2 = st.columns([1,2])
     with c1: st.image("static/fotoku.png", width=180)
     with c2:
         st.markdown("""
-        **Nama** : Parveen Uzma Habidin  
-        **NIM** : 535220226  
-        **Jurusan** : Teknik Informatika  
-        **Fakultas** : Teknik Informasi  
+**Nama** : Parveen Uzma Habidin  
+**NIM** : 535220226  
+**Jurusan** : Teknik Informatika  
+**Fakultas** : Teknik Informasi  
 
-        **Topik Skripsi** :  
-        Perencanaan Analisis Sentimen Aplikasi Sosial Media Pada Google Play Store Menggunakan Model Random Forest, Support Vector Machine dan TF-IDF
-        """)
+**Topik Skripsi** :  
+Perencanaan Analisis Sentimen Aplikasi Sosial Media Pada Google Play Store Menggunakan Model Random Forest, Support Vector Machine dan TF-IDF
+""")
     st.markdown("---")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("### Dosen Pembimbing")
-        st.image("static/pak_tri.webp", width=140)
+    a,b = st.columns(2)
+    with a:
+        st.markdown("### Dosen Pembimbing"); st.image("static/pak_tri.webp", width=140)
         st.markdown("Tri Sutrisno, S.Si., M.Sc.")
-    with c2:
-        st.markdown("### Institusi")
-        st.image("static/Logo_untar.png", width=180)
+    with b:
+        st.markdown("### Institusi"); st.image("static/Logo_untar.png", width=180)
         st.markdown("**Universitas Tarumanagara**")
 
-
-# =========================
-# PREDIKSI
-# =========================
+# ---------------- PREDIKSI
 elif page == "prediksi":
+    
+    # --- Paksa sidebar terbuka di desktop (kalau tersimpan collapsed di local storage) ---
+    st.markdown("""
+    <script>
+    (function() {
+    function openSidebarIfCollapsed() {
+        try {
+        const doc = window.parent.document;
+        const btn = doc.querySelector('[data-testid="stSidebarCollapseButton"] button');
+        const sb  = doc.querySelector('[data-testid="stSidebar"]');
+        if (!btn || !sb) return;
+        const isCollapsed = sb.getAttribute('aria-expanded') === 'false';
+        const isDesktop   = window.innerWidth >= 901;
+        if (isDesktop && isCollapsed) btn.click();
+        } catch (e) { /* ignore */ }
+    }
+    setTimeout(openSidebarIfCollapsed, 150);
+    setTimeout(openSidebarIfCollapsed, 400);
+    setTimeout(openSidebarIfCollapsed, 800);
+    window.addEventListener('resize', openSidebarIfCollapsed);
+    })();
+    </script>
+    """, unsafe_allow_html=True)
+
+    
     st.title("Prediksi Sentimen dari Link Google Play")
     st.caption("Masukkan link aplikasi dari Google Play Store, lalu sistem akan prediksi sentimennya")
 
-    # Artifacts
     VEC_PATH = Path("Artifacts") / "tfidf_vectorizer.joblib"
     SVM_PATH = Path("Artifacts") / "svm_rbf_model.joblib"
     RF_PATH  = Path("Artifacts") / "random_forest_model.joblib"
@@ -226,224 +180,146 @@ elif page == "prediksi":
     try:
         tfidf_vectorizer, svm_model, rf_model = load_artifacts()
     except Exception as e:
-        st.error(f"Gagal memuat artifacts.\nDetail: {e}")
-        st.stop()
+        st.error(f"Gagal memuat artifacts.\nDetail: {e}"); st.stop()
 
-    # Model options
     avail = []
     if svm_model is not None: avail.append("SVM (RBF)")
     if rf_model  is not None: avail.append("RandomForest")
-    if svm_model is not None and rf_model is not None:
-        avail.append("SVM dan RandomForest")
-    if not avail:
-        st.error("Tidak ada model yang tersedia.")
-        st.stop()
+    if svm_model is not None and rf_model is not None: avail.append("SVM dan RandomForest")
+    if not avail: st.error("Tidak ada model yang tersedia."); st.stop()
 
-    # Sidebar form
     with st.sidebar:
         st.header("Pengaturan")
         model_name = st.selectbox("Pilih model", avail, index=0)
-        lang = st.selectbox("Bahasa ulasan", ["id", "en"], index=0)
-        country = st.selectbox("Negara", ["id", "us"], index=0)
-        n_reviews = st.slider("Jumlah ulasan di-scrape", 50, 1000, 200, 50)
-        sort_opt = st.selectbox("Urutkan", ["NEWEST", "MOST_RELEVANT"], index=0)
-        run = st.button("Prediksi")
+        lang       = st.selectbox("Bahasa ulasan", ["id","en"], index=0)
+        country    = st.selectbox("Negara", ["id","us"], index=0)
+        n_reviews  = st.slider("Jumlah ulasan di-scrape", 50, 1000, 200, 50)
+        sort_opt   = st.selectbox("Urutkan", ["NEWEST","MOST_RELEVANT"], index=0)
+        run        = st.button("Prediksi")
 
-    # Utils
     ID_RE = re.compile(r"[?&]id=([a-zA-Z0-9._]+)")
     def parse_app_id(text: str) -> str:
-        t = (text or "").strip()
-        m = ID_RE.search(t)
-        return m.group(1) if m else t
+        t = (text or "").strip(); m = ID_RE.search(t); return m.group(1) if m else t
 
     def scrape_reviews(app_id: str, lang="id", country="id", n=200, sort="NEWEST"):
         sort_map = {"NEWEST": Sort.NEWEST, "MOST_RELEVANT": Sort.MOST_RELEVANT}
         sort = sort_map.get(sort, Sort.NEWEST)
         got, token = [], None
         while len(got) < n:
-            batch, token = reviews(
-                app_id, lang=lang, country=country, sort=sort,
-                count=min(200, n - len(got)), continuation_token=token
-            )
+            batch, token = reviews(app_id, lang=lang, country=country, sort=sort,
+                                   count=min(200, n-len(got)), continuation_token=token)
             got.extend(batch)
-            if token is None:
-                break
-        if not got:
-            return pd.DataFrame(columns=["content","score","at","replyContent","userName"])
+            if token is None: break
+        if not got: return pd.DataFrame(columns=["content","score","at","replyContent","userName"])
         return pd.DataFrame(got)
 
-    link = st.text_input(
-        "Masukkan link Google Play / package id",
-        placeholder="https://play.google.com/store/apps/details?id=com.zhiliaoapp.musically"
-    )
+    link = st.text_input("Masukkan link Google Play / package id",
+                         placeholder="https://play.google.com/store/apps/details?id=com.zhiliaoapp.musically")
 
     if run:
         app_id = parse_app_id(link)
-        if not app_id:
-            st.error("Package id tidak valid.")
-            st.stop()
+        if not app_id: st.error("Package id tidak valid."); st.stop()
 
-        # meta app
         try:
             meta = gp_app(app_id, lang=lang, country=country)
-            st.markdown(
-                f"**App:** {meta.get('title','?')}  \n"
-                f"**Package:** `{app_id}`  \n"
-                f"**Installs:** {meta.get('installs','?')}  \n"
-                f"**Score:** {meta.get('score','?')}"
-            )
+            st.markdown(f"**App:** {meta.get('title','?')}  \n**Package:** `{app_id}`  \n**Installs:** {meta.get('installs','?')}  \n**Score:** {meta.get('score','?')}")
         except Exception:
             st.info(f"Package: `{app_id}`")
 
-        # ulasan
         with st.spinner(f"Mengambil {n_reviews} ulasan..."):
             df = scrape_reviews(app_id, lang=lang, country=country, n=n_reviews, sort=sort_opt)
-        if df.empty:
-            st.warning("Tidak ada ulasan yang diambil.")
-            st.stop()
+        if df.empty: st.warning("Tidak ada ulasan yang diambil."); st.stop()
 
-        df = df.rename(columns={"content": "text", "score": "rating", "at": "date"})
+        df = df.rename(columns={"content":"text","score":"rating","at":"date"})
         cols = ["text","rating","date","userName","replyContent"]
-        df = df[[c for c in cols if c in df.columns]].copy()
+        df  = df[[c for c in cols if c in df.columns]].copy()
 
-        # TF-IDF & prediksi
         with st.spinner("Mengubah fitur (TF-IDF) dan memprediksi"):
-            X_tfidf = tfidf_vectorizer.transform(df["text"].astype(str))
-            X_dense = X_tfidf.toarray()
+            X = joblib.load(VEC_PATH).transform(df["text"].astype(str)).toarray()
             results = {}
-
             if model_name == "SVM (RBF)":
-                y_pred = svm_model.predict(X_dense)
-                tmp = df.copy()
-                tmp["pred"] = y_pred
-                tmp["pred_label"] = tmp["pred"].map({1: "Positive", 0: "Negative"})
-                results["SVM (RBF)"] = tmp
-
+                y = joblib.load(SVM_PATH).predict(X)
+                t = df.copy(); t["pred"]=y; t["pred_label"]=t["pred"].map({1:"Positive",0:"Negative"})
+                results["SVM (RBF)"]=t
             elif model_name == "RandomForest":
-                y_pred = rf_model.predict(X_dense)
-                tmp = df.copy()
-                tmp["pred"] = y_pred
-                tmp["pred_label"] = tmp["pred"].map({1: "Positive", 0: "Negative"})
-                results["RandomForest"] = tmp
-
+                y = joblib.load(RF_PATH).predict(X)
+                t = df.copy(); t["pred"]=y; t["pred_label"]=t["pred"].map({1:"Positive",0:"Negative"})
+                results["RandomForest"]=t
             else:
-                y_svm = svm_model.predict(X_dense)
-                df_svm = df.copy()
-                df_svm["pred"] = y_svm
-                df_svm["pred_label"] = df_svm["pred"].map({1: "Positive", 0: "Negative"})
-                results["SVM (RBF)"] = df_svm
+                y_svm = joblib.load(SVM_PATH).predict(X)
+                t1=df.copy(); t1["pred"]=y_svm; t1["pred_label"]=t1["pred"].map({1:"Positive",0:"Negative"})
+                results["SVM (RBF)"]=t1
+                y_rf  = joblib.load(RF_PATH).predict(X)
+                t2=df.copy(); t2["pred"]=y_rf; t2["pred_label"]=t2["pred"].map({1:"Positive",0:"Negative"})
+                results["RandomForest"]=t2
 
-                y_rf = rf_model.predict(X_dense)
-                df_rf = df.copy()
-                df_rf["pred"] = y_rf
-                df_rf["pred_label"] = df_rf["pred"].map({1: "Positive", 0: "Negative"})
-                results["RandomForest"] = df_rf
-
-        # simpan
         st.session_state.results = results
-        st.session_state.app_id = app_id
-        st.session_state.is_combo = (model_name == "SVM dan RandomForest")
+        st.session_state.app_id  = app_id
+        st.session_state.is_combo = (model_name=="SVM dan RandomForest")
 
-        # unduhan
         if st.session_state.is_combo:
-            df_svm = results["SVM (RBF)"]
-            df_rf  = results["RandomForest"]
-
-            output = io.BytesIO()
-            with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-                df_svm.to_excel(writer, sheet_name="SVM (RBF)", index=False)
-                df_rf.to_excel(writer, sheet_name="RandomForest", index=False)
-            output.seek(0)
-            st.session_state.csv_pred = output.getvalue()
+            df_svm = results["SVM (RBF)"]; df_rf = results["RandomForest"]
+            out = io.BytesIO()
+            with pd.ExcelWriter(out, engine="xlsxwriter") as w:
+                df_svm.to_excel(w, sheet_name="SVM (RBF)", index=False)
+                df_rf.to_excel(w,  sheet_name="RandomForest", index=False)
+            out.seek(0); st.session_state.csv_pred = out.getvalue()
 
             dist_svm = df_svm["pred_label"].value_counts().rename_axis("sentiment").reset_index(name="count")
             dist_rf  = df_rf["pred_label"].value_counts().rename_axis("sentiment").reset_index(name="count")
-
-            dist_out = io.BytesIO()
-            with pd.ExcelWriter(dist_out, engine="xlsxwriter") as writer:
-                dist_svm.to_excel(writer, sheet_name="SVM (RBF)", index=False)
-                dist_rf.to_excel(writer, sheet_name="RandomForest", index=False)
-            dist_out.seek(0)
-            st.session_state.csv_dist = dist_out.getvalue()
+            out2 = io.BytesIO()
+            with pd.ExcelWriter(out2, engine="xlsxwriter") as w:
+                dist_svm.to_excel(w, sheet_name="SVM (RBF)", index=False)
+                dist_rf.to_excel(w,  sheet_name="RandomForest", index=False)
+            out2.seek(0); st.session_state.csv_dist = out2.getvalue()
         else:
-            first_key = next(iter(results))
-            first_df = results[first_key]
-            st.session_state.csv_pred = first_df.to_csv(index=False).encode("utf-8")
-            dist_df = first_df["pred_label"].value_counts().rename_axis("sentiment").reset_index(name="count")
-            st.session_state.csv_dist = dist_df.to_csv(index=False).encode("utf-8")
+            key = next(iter(results)); dfk = results[key]
+            st.session_state.csv_pred = dfk.to_csv(index=False).encode("utf-8")
+            st.session_state.csv_dist = dfk["pred_label"].value_counts().rename_axis("sentiment").reset_index(name="count").to_csv(index=False).encode("utf-8")
 
-# =========================
-# OUTPUT (grafik, tabel, unduhan, metrik)
-# =========================
-if st.session_state.results and page == "prediksi":
+# ---------------- OUTPUT
+if st.session_state.results and page=="prediksi":
     items = list(st.session_state.results.items())
     cols = st.columns(len(items))
-    for col, (model_key, df_model) in zip(cols, items):
-        with col:
-            st.subheader(f"Distribusi Sentimen – {model_key}")
-            dist_df = df_model["pred_label"].value_counts().rename_axis("Sentiment").reset_index(name="Count")
-            st.bar_chart(dist_df.set_index("Sentiment"))
-            st.subheader(f"Sampel Hasil Prediksi – {model_key}")
-            st.dataframe(df_model.head(20), use_container_width=True)
+    for c,(name,dfm) in zip(cols, items):
+        with c:
+            st.subheader(f"Distribusi Sentimen – {name}")
+            dist = dfm["pred_label"].value_counts().rename_axis("Sentiment").reset_index(name="Count")
+            st.bar_chart(dist.set_index("Sentiment"))
+            st.subheader(f"Sampel Hasil Prediksi – {name}")
+            st.dataframe(dfm.head(20), use_container_width=True)
 
-    c1, c2, c3, c4, c5 = st.columns([1,2,2,2,1])
+    c1,c2,c3,c4,c5 = st.columns([1,2,2,2,1])
     with c2:
         st.download_button(
-            "Download Hasil Prediksi",
-            data=st.session_state.csv_pred,
-            file_name=(
-                f"{st.session_state.app_id}_prediksi_ulasan.xlsx"
-                if st.session_state.is_combo else
-                f"{st.session_state.app_id}_prediksi_ulasan.csv"
-            ),
-            mime=(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                if st.session_state.is_combo else
-                "text/csv"
-            ),
-            type="primary",
-            key="dl_pred",
+            "Download Hasil Prediksi", data=st.session_state.csv_pred,
+            file_name=(f"{st.session_state.app_id}_prediksi_ulasan.xlsx" if st.session_state.is_combo else f"{st.session_state.app_id}_prediksi_ulasan.csv"),
+            mime=("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" if st.session_state.is_combo else "text/csv"),
+            type="primary", key="dl_pred"
         )
     with c4:
         st.download_button(
-            "Download Distribusi Sentimen",
-            data=st.session_state.csv_dist,
-            file_name=(
-                f"{st.session_state.app_id}_distribusi_sentimen.xlsx"
-                if st.session_state.is_combo else
-                f"{st.session_state.app_id}_distribusi_sentimen.csv"
-            ),
-            mime=(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                if st.session_state.is_combo else
-                "text/csv"
-            ),
-            type="primary",
-            key="dl_dist",
+            "Download Distribusi Sentimen", data=st.session_state.csv_dist,
+            file_name=(f"{st.session_state.app_id}_distribusi_sentimen.xlsx" if st.session_state.is_combo else f"{st.session_state.app_id}_distribusi_sentimen.csv"),
+            mime=("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" if st.session_state.is_combo else "text/csv"),
+            type="primary", key="dl_dist"
         )
 
-    # Metrik (dibanding rating)
     def rating_to_label(r): 
         if pd.isna(r): return None
         return 1 if r >= 4 else 0
-
-    all_metrics = []
-    for model_key, df_model in st.session_state.results.items():
-        df_eval = df_model.copy()
-        df_eval["true_label"] = df_eval["rating"].apply(rating_to_label)
-        df_eval = df_eval.dropna(subset=["true_label"])
-        if df_eval.empty: 
-            continue
-        acc = accuracy_score(df_eval["true_label"], df_eval["pred"])
-        prec = precision_score(df_eval["true_label"], df_eval["pred"])
-        rec = recall_score(df_eval["true_label"], df_eval["pred"])
-        f1  = f1_score(df_eval["true_label"], df_eval["pred"])
-        all_metrics.append({"Model": model_key, "Accuracy": acc, "Precision": prec, "Recall": rec, "F1-Score": f1})
-
-    if all_metrics:
-        st.subheader("Perbandingan Metrik Evaluasi (dibanding rating bintang)")
-        st.dataframe(pd.DataFrame(all_metrics), use_container_width=True)
-    else:
-        st.info("Tidak ada metrik yang bisa dihitung.")
-elif page == "prediksi" and not st.session_state.results:
+    metrics=[]
+    for name,dfm in st.session_state.results.items():
+        d= dfm.copy(); d["true_label"]=d["rating"].apply(rating_to_label); d=d.dropna(subset=["true_label"])
+        if d.empty: continue
+        metrics.append({
+            "Model":name,
+            "Accuracy":accuracy_score(d["true_label"], d["pred"]),
+            "Precision":precision_score(d["true_label"], d["pred"]),
+            "Recall":recall_score(d["true_label"], d["pred"]),
+            "F1-Score":f1_score(d["true_label"], d["pred"]),
+        })
+    if metrics: st.subheader("Perbandingan Metrik Evaluasi (dibanding rating bintang)"); st.dataframe(pd.DataFrame(metrics), use_container_width=True)
+    else: st.info("Tidak ada metrik yang bisa dihitung.")
+elif page=="prediksi" and not st.session_state.results:
     st.info("Masukkan link/package, lalu klik **Prediksi**.")
