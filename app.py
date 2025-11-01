@@ -29,14 +29,6 @@ for k, v in {
 
 st.markdown("""
 <style>
-/* JANGAN display:none; biar hamburger tetap hidup */
-[data-testid="stHeader"]{
-  background: transparent !important;
-  box-shadow: none !important;
-  min-height: 0 !important;
-  height: auto !important;
-}
-
 /* >>> INI PENTING: keluarkan tombol dari efek visibility parent */
 [data-testid="stHeader"] [data-testid="stSidebarCollapseButton"]{
   position: fixed !important;
@@ -98,7 +90,7 @@ st.markdown(
 .navbar {{
     position: fixed;
     top: 0; left: 0; right: 0;
-    height: 80px;
+    height: 90px;
     background: #ffffff;
     display: flex;
     align-items: center;
