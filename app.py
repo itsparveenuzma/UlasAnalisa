@@ -68,9 +68,7 @@ st.markdown("""
     padding: 8px 10px !important;
   }
 }
-/* MOBILE HAMBURGER POSITION */
-@media (max-width: 900px){[data-testid="stSidebarCollapseButton"]{top:92px !important;}}
-@media (min-width: 901px){[data-testid="stSidebarCollapseButton"]{display:none !important;}}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -159,7 +157,7 @@ st.markdown(
 if page == "prediksi":
     st.markdown("""
     <style>
-    /* PREDIKSI: DESKTOP - sidebar selalu terlihat, hamburger disembunyikan */
+    /* DESKTOP: sidebar tetap muncul tanpa hamburger */
     @media (min-width: 901px){
       [data-testid="stSidebar"]{
           transform: none !important;
@@ -179,24 +177,30 @@ if page == "prediksi":
       [data-testid="stSidebarCollapseButton"]{ display: none !important; }
     }
 
-    /* PREDIKSI: MOBILE - hamburger di bawah navbar, sidebar overlay */
+    /* MOBILE: sidebar overlay & hamburger di bawah navbar */
     @media (max-width: 900px){
       [data-testid="stSidebarCollapseButton"]{
           position: fixed !important;
-          top: 92px !important;
-          left: 12px !important;
+          top: 88px !important;
+          left: 15px !important;
           z-index: 200001 !important;
           display: flex !important;
       }
       [data-testid="stSidebar"]{
+          transform: translateX(-100%) !important;
+          transition: transform 0.3s ease-in-out !important;
           position: fixed !important;
-          top: 92px !important;
+          top: 90px !important;
           left: 0 !important;
           width: 80vw !important;
           max-width: 22rem !important;
           height: calc(100% - 90px) !important;
-          overflow: auto !important;
+          background-color: #111 !important; /* optional: biar overlay jelas */
+          overflow-y: auto !important;
           z-index: 200000 !important;
+      }
+      [data-testid="stSidebar"][aria-expanded="true"]{
+          transform: translateX(0) !important;
       }
       [data-testid="stAppViewContainer"] > .main{
           margin-top: 92px !important;
@@ -204,7 +208,7 @@ if page == "prediksi":
       }
     }
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 else:
     st.markdown("""
     <style>
