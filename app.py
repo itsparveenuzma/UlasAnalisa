@@ -155,12 +155,12 @@ st.markdown(
 )
 
 if page == "prediksi":
-    st.markdown("""
+     st.markdown("""
     <style>
-    /* DESKTOP: sidebar tetap muncul tanpa hamburger */
+    /* DESKTOP: sidebar selalu tampil, hamburger disembunyikan */
     @media (min-width: 901px){
       [data-testid="stSidebar"]{
-          transform: none !important;
+          transform: none !important;            /* hilangkan animasi default Streamlit */
           position: fixed !important;
           top: 92px !important;
           left: 0 !important;
@@ -177,31 +177,34 @@ if page == "prediksi":
       [data-testid="stSidebarCollapseButton"]{ display: none !important; }
     }
 
-    /* MOBILE: sidebar overlay & hamburger di bawah navbar */
+    /* MOBILE: sidebar overlay, hamburger di bawah navbar */
     @media (max-width: 900px){
       [data-testid="stSidebarCollapseButton"]{
           position: fixed !important;
-          top: 88px !important;
+          top: 90px !important;     /* tepat di bawah navbar */
           left: 15px !important;
           z-index: 200001 !important;
           display: flex !important;
       }
+
+      /* Default tertutup ke kiri, saat terbuka Streamlit set aria-expanded="true" */
       [data-testid="stSidebar"]{
-          transform: translateX(-100%) !important;
-          transition: transform 0.3s ease-in-out !important;
           position: fixed !important;
           top: 90px !important;
           left: 0 !important;
           width: 80vw !important;
           max-width: 22rem !important;
           height: calc(100% - 90px) !important;
-          background-color: #111 !important; /* optional: biar overlay jelas */
           overflow-y: auto !important;
           z-index: 200000 !important;
+          transform: translateX(-100%) !important;         /* <— KUNCI anti “numpuk” */
+          transition: transform 0.25s ease-in-out !important;
+          background: var(--color-bg, #111) !important;    /* opsional: biar overlay jelas */
       }
       [data-testid="stSidebar"][aria-expanded="true"]{
-          transform: translateX(0) !important;
+          transform: translateX(0) !important;             /* <— buka saat hamburger diklik */
       }
+
       [data-testid="stAppViewContainer"] > .main{
           margin-top: 92px !important;
           margin-left: 0 !important;
