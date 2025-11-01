@@ -29,45 +29,50 @@ for k, v in {
 
 st.markdown("""
 <style>
-/* Desktop & Mobile: pastikan tombol toggle punya z-index tertinggi */
 [data-testid="stSidebarCollapseButton"]{
   position: fixed !important;
-  top: 92px !important;          /* 80px tinggi navbar + ~12px margin */
+  top: 92px !important;
   left: 12px !important;
-  z-index: 200000 !important;    /* harus > navbar */
-  display: flex !important;      /* paksa tampil */
+  z-index: 200000 !important;
 }
 
-/* Mobile drawer width & konten tidak terdorong */
 @media (max-width: 768px){
-  [data-testid="stSidebar"]{
-    width: 80vw !important;
-    min-width: 260px !important;
-    z-index: 150000 !important;
-    top: 90px !important;                    /* tepat di bawah navbar */
-    height: calc(100% - 90px) !important;
+  [data-testid="stSidebarCollapseButton"] button {
+    padding: 8px 10px !important;
   }
-  [data-testid="stAppViewContainer"] > .main{
-    margin-left: 0 !important;              /* konten tidak geser di mobile */
+  [data-testid="stSidebar"]{
+    width: 78vw !important;
+    min-width: 260px !important;
   }
 }
 
-/* Desktop: sidebar fixed kiri, konten digeser */
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
 @media (min-width: 769px){
-  [data-testid="stSidebar"]{
-    position: fixed !important;
-    top: 90px !important;
-    left: 0 !important;
-    height: calc(100% - 90px) !important;
-    width: 18rem !important;
-    z-index: 150000 !important;
+  [data-testid="stHeader"]{ display: none !important; }
+}
+@media (max-width: 768px){
+  [data-testid="stHeader"]{
+    background: transparent !important;
+    box-shadow: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
   }
-  [data-testid="stAppViewContainer"] > .main{
-    margin-left: 18rem !important;
-  }
+}
+
+[data-testid="stSidebarCollapseButton"]{
+  position: fixed !important;
+  top: 92px !important;      
+  left: 12px !important;
+  z-index: 200000 !important;
+  display: flex !important;
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 #LOGO base64
 def img_to_base64(path: str) -> str:
@@ -105,7 +110,7 @@ st.markdown(
     border-bottom: 3px solid #b71c1c;
     z-index: 100000;
 }}
-/* konten turun 90px karena navbar fixed */
+
 [data-testid="stAppViewContainer"] > .main {{
     margin-top: 90px;
 }}
@@ -172,18 +177,15 @@ if page == "prediksi":
 else:
     st.markdown("""
     <style>
-    /* --- DESKTOP SAJA: sembunyikan header supaya navbar kustom bersih --- */
     @media (min-width: 769px){
     [data-testid="stHeader"]{ display: none !important; }
     }
 
-    /* --- MOBILE: header tetap ada supaya tombol hamburger dirender --- */
     @media (max-width: 768px){
-    /* Hilangkan background/header default agar tidak ganggu navbar kustom */
     [data-testid="stHeader"]{
         background: transparent !important;
         box-shadow: none !important;
-        height: 0 !important;           /* ‘kosongkan’ tingginya */
+        height: 0 !important;           
         min-height: 0 !important;
     }
     }
@@ -294,24 +296,27 @@ elif page == "prediksi":
     
     st.markdown("""
     <style>
-    /* Desktop: sidebar “menempel” di kiri, konten digeser */
+    @media (min-width: 769px){
     [data-testid="stSidebar"]{
-    position: fixed;
-    top: 90px;                 /* pas persis di bawah navbar */
-    left: 0;
-    height: calc(100% - 90px);
-    width: 18rem;
-    z-index: 150000;           /* cukup tinggi, tapi < tombol */
+        position: fixed !important;
+        top: 90px !important;
+        left: 0 !important;
+        height: calc(100% - 90px) !important;
+        width: 18rem !important;
+        z-index: 150000 !important;
     }
     [data-testid="stAppViewContainer"] > .main{
-    margin-left: 18rem;
+        margin-left: 18rem !important;
+    }
     }
 
-    /* Mobile: jadikan drawer, jangan geser konten */
     @media (max-width: 768px){
     [data-testid="stSidebar"]{
-        width: 80vw;
-        min-width: 260px;
+        width: 80vw !important;
+        min-width: 260px !important;
+        top: 90px !important;
+        height: calc(100% - 90px) !important;
+        z-index: 150000 !important;
     }
     [data-testid="stAppViewContainer"] > .main{
         margin-left: 0 !important;
@@ -484,9 +489,9 @@ elif page == "prediksi":
             output.seek(0)
 
             # simpan ke session_state
-            st.session_state.csv_pred = output.getvalue()   # isinya xlsx sekarang
+            st.session_state.csv_pred = output.getvalue()   
 
-            # distribusi juga 2 sheet
+            # distribusi 
             dist_svm = (
                 df_svm["pred_label"].value_counts()
                 .rename_axis("sentiment")
@@ -507,7 +512,6 @@ elif page == "prediksi":
             st.session_state.csv_dist = dist_out.getvalue()
 
         else:
-            # mode 1 model saja → tetap CSV
             first_key = next(iter(results))
             first_df = results[first_key]
 
